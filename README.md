@@ -8,7 +8,12 @@ La implementé hace tanto tiempo, que realmente no recuerdo la motivación que m
 
 ### Requisitos ###
 
-* Java 5
+* Java 8
+
+### ToDo ###
+
+* Refactorizar un poco el código
+* Ajustar el estilo de la aplicación a otras que he ido haciendo posteriormente
 
 ### Licencia ### 
 
