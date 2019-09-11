@@ -6,9 +6,9 @@
 
 package es.jklabs;
 
+import es.jklabs.file.filter.ExeFilter;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
-import exeExtractor.ExeFilter;
 
 import javax.swing.*;
 import java.awt.*;
