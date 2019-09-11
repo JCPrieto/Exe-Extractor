@@ -6,14 +6,21 @@ La funcionalidad es sencilla: A partir de un intalador en formato .exe autoextra
 
 La implementé hace tanto tiempo, que realmente no recuerdo la motivación que me llevó a hacerla.
 
+Le he hecho 4 retoques esteticos para que se parezca a otras aplicaciones que he implementado mas recientemente, refactorizado un poco el código, integrado con Maven y subido la versión de compilación a Java 11 ya que en su momento la implementé en Java 5. 
+En cualquier caso, en Java 8 debería de compilar ya que lo unico que he actualizado al refactorizar es el uso de 4 o 5 lambdas.
+
 ### Requisitos ###
 
-* Java 8
+* Java 11
 
-### ToDo ###
+### Changelog ###
 
-* Refactorizar un poco el código
-* Ajustar el estilo de la aplicación a otras que he ido haciendo posteriormente
+* 2.0.0
+
+    * Migracion a Java 11.
+    * Integracion con Maven.
+    * Look & Feel del sistema operativo en el que corrá.
+    * Refactorización sencilla del código. 
 
 ### Licencia ### 
 

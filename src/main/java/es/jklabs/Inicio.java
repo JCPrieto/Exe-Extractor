@@ -6,6 +6,8 @@
 
 package es.jklabs;
 
+import es.jklabs.utilidades.Constantes;
+import es.jklabs.utilidades.Logger;
 import exeExtractor.ExeFilter;
 
 import javax.swing.*;
@@ -24,9 +26,9 @@ public class Inicio extends javax.swing.JFrame {
     
     /** Creates new form Inicio */
     private Inicio() {
-        JOptionPane.showMessageDialog(new Frame(),"Exe Extractor 1.0.\n\n " +
-                "Creado por: Juan Carlos Prieto Silos\n" +
-                "Web Site: http://macaprojects.iespana.es","Info", JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(new Frame(),"<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1>" +
+                "Creado por: <b>Juan Carlos Prieto Silos</b></html>\n" +
+                "Web Site: JCPrieto.tk","Info", JOptionPane.PLAIN_MESSAGE);
         initComponents();
     }
     
@@ -48,7 +50,7 @@ public class Inicio extends javax.swing.JFrame {
         JButton jButton3 = new JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Exe Extractor 1.0");
+        setTitle(Constantes.NOMBRE_APP);
         jButton1.setText("Origen");
         jButton1.addActionListener(evt2 -> jButton1ActionPerformed());
 
@@ -160,7 +162,15 @@ public class Inicio extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(() -> new Inicio().setVisible(true));
+        Logger.eliminarLogsVacios();
+        Logger.init();
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            java.awt.EventQueue.invokeLater(() -> new Inicio().setVisible(true));
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
+                UnsupportedLookAndFeelException e) {
+            Logger.error("Cargar el LookAndFeel del S.O", e);
+        }
     }
     
     public class Open extends javax.swing.JFrame {
