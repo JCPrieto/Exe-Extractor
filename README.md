@@ -2,7 +2,7 @@
 
 Esta aplicación la implementé en los primera años de la carrera y la subo a Github para que no se pierda.
 
-La funcionalidad es sencilla: A partir de un intalador en formato .exe autoextraible, lo descomprime y lo convierte en un archivo .zip.
+La funcionalidad es sencilla: A partir de un instalador en formato .exe autoextraible, lo descomprime y lo convierte en un archivo .zip.
 
 La implementé hace tanto tiempo, que realmente no recuerdo la motivación que me llevó a hacerla.
 
