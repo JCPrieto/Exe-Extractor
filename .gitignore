@@ -189,3 +189,6 @@ Sera borrado target/libs/
 Sera borrado target/maven-archiver/
 Sera borrado target/maven-status/
 Sera borrado target/test-classes/
+/.idea/
+/target/
+/Exe Extractor.iml
