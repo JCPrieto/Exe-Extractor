@@ -1,7 +1,7 @@
 package es.jklabs.utilidades;
 
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,7 +43,7 @@ public class Logger {
         File carpeta = new File(System.getProperty("user.dir"));
         File[] lista = carpeta.listFiles();
         if (lista != null) {
-            Arrays.stream(lista).filter(f -> f.isFile() && f.getName().endsWith(".log") && !StringUtils.equals
+            Arrays.stream(lista).filter(f -> f.isFile() && f.getName().endsWith(".log") && !Strings.CS.equals
                     (f.getName(), ARCHIVO)).forEach(Logger::eliminarLogsVacios);
         }
     }

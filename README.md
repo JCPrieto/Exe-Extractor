@@ -15,6 +15,9 @@ En cualquier caso, en Java 8 debería de compilar ya que lo unico que he actuali
 
 ### Changelog ###
 
+* 2.0.1
+  * Actualización de seguridad
+
 * 2.0.0
 
     * Migracion a Java 11.

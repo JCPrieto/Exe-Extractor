@@ -13,6 +13,7 @@ import es.jklabs.utilidades.Logger;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.nio.file.FileSystems;
 
 /**
  *
@@ -125,9 +126,9 @@ public class Inicio extends javax.swing.JFrame {
                 Thread.onSpinWait();
             }
             String oldName = "%EXENAME%";
-            File newFile = new File(rutaSave + System.getProperty("file.separator") + oldName);
+            File newFile = new File(rutaSave + FileSystems.getDefault().getSeparator() + oldName);
             String newName = "Exe.zip";
-            newFile.renameTo(new File(rutaSave + System.getProperty("file.separator") + newName));
+            newFile.renameTo(new File(rutaSave + FileSystems.getDefault().getSeparator() + newName));
             this.jTextArea1.setText(this.jTextArea1.getText()+"-El archivo que contiene lo que usted desea se llama Exe.zip");
             jProgressBar1.setValue(100);
         } 
@@ -172,8 +173,8 @@ public class Inicio extends javax.swing.JFrame {
             Logger.error("Cargar el LookAndFeel del S.O", e);
         }
     }
-    
-    public class Open extends javax.swing.JFrame {
+
+    public static class Open extends javax.swing.JFrame {
         
     private javax.swing.JFileChooser jFileChooser1;
     
@@ -190,8 +191,8 @@ public class Inicio extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">                          
     private void initComponents() {
         jFileChooser1 = new javax.swing.JFileChooser();
-        
-        setDefaultCloseOperation(this.DISPOSE_ON_CLOSE);
+
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             jFileChooser1.setFileFilter(new ExeFilter());
 
             javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -214,8 +215,8 @@ public class Inicio extends javax.swing.JFrame {
         }
     
     }
-    
-    public class SelectDir extends javax.swing.JFrame {
+
+    public static class SelectDir extends javax.swing.JFrame {
     
     /** Creates new form SelectDir */
     SelectDir() {
@@ -231,7 +232,7 @@ public class Inicio extends javax.swing.JFrame {
     private void initComponents() {
         jFileChooser1 = new javax.swing.JFileChooser();
 
-        setDefaultCloseOperation(this.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         jFileChooser1.setDialogType(javax.swing.JFileChooser.SAVE_DIALOG);
         jFileChooser1.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 
