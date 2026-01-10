@@ -23,9 +23,10 @@
 
 ## Testing Guidelines
 
-- There are currently no automated tests in the repository.
-- If adding tests, place them under `src/test/java` and name them `*Test.java`.
-- Use `mvn test` to run any added tests and note results in PRs.
+- Automated tests live under `src/test/java` and are named `*Test.java`.
+- Each time we create a new class or a new public method, add its corresponding unit test.
+- When modifying a method, review existing tests and update them if behavior changes.
+- Use `mvn test` to run tests and note results in PRs.
 
 ## Commit & Pull Request Guidelines
 

@@ -15,6 +15,13 @@ En cualquier caso, en Java 8 debería de compilar ya que lo unico que he actuali
 
 ### Changelog ###
 
+* 2.1.0
+  * Comprobacion de nuevas versiones desde GitHub y enlace de descarga en el menu.
+  * Version y metadatos movidos a `app.properties` con filtrado de recursos Maven.
+  * Ajustes de empaquetado (nombre final del jar/zip) y scripts de lanzamiento.
+  * Pruebas unitarias basicas para la logica de versiones.
+  * Workflow de release en GitHub Actions.
+
 * 2.0.2
   * Actualización de seguridad
   * Actualización a Java 21

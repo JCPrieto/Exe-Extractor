@@ -13,7 +13,14 @@ import es.jklabs.utilidades.Logger;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.FileSystems;
+import java.util.concurrent.CountDownLatch;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -23,14 +30,13 @@ public class Inicio extends javax.swing.JFrame {
     
     private String rutaArchivo;
     private String rutaSave= "";
-    private volatile Boolean fin= false;
+    private JMenuItem menuUpdateItem;
+    private String updateDownloadUrl;
     
     /** Creates new form Inicio */
     private Inicio() {
-        JOptionPane.showMessageDialog(new Frame(),"<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1>" +
-                "Creado por: <b>Juan Carlos Prieto Silos</b></html>\n" +
-                "Web Site: JCPrieto.es", "Info", JOptionPane.PLAIN_MESSAGE);
         initComponents();
+        initUpdateCheck();
     }
     
     /** This method is called from within the constructor to
@@ -41,6 +47,10 @@ public class Inicio extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         // Variables declaration - do not modify//GEN-BEGIN:variables
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuAyuda = new JMenu("Ayuda");
+        JMenuItem menuAcercaDe = new JMenuItem("Acerca de");
+        menuUpdateItem = new JMenuItem("Nueva version disponible");
         JButton jButton1 = new JButton();
         jLabel1 = new javax.swing.JLabel();
         JButton jButton2 = new JButton();
@@ -52,6 +62,19 @@ public class Inicio extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(Constantes.NOMBRE_APP);
+        menuAcercaDe.addActionListener(evt -> showInfoDialog());
+        menuAyuda.add(menuAcercaDe);
+        menuBar.add(menuAyuda);
+        menuBar.add(Box.createHorizontalGlue());
+        menuUpdateItem.setVisible(false);
+        menuUpdateItem.addActionListener(evt -> openUpdateDownload());
+        menuUpdateItem.setIcon(loadUpdateIcon());
+        menuUpdateItem.setToolTipText("Descargar la ultima version disponible");
+        menuUpdateItem.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        menuUpdateItem.setHorizontalTextPosition(SwingConstants.RIGHT);
+        menuBar.add(menuUpdateItem);
+        setJMenuBar(menuBar);
+
         jButton1.setText("Origen");
         jButton1.addActionListener(evt2 -> jButton1ActionPerformed());
 
@@ -116,29 +139,51 @@ public class Inicio extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton3ActionPerformed() {//GEN-FIRST:event_jButton3ActionPerformed
-        try {
-            Runtime.getRuntime().exec(new String[]{rutaArchivo, "/x", rutaSave});
-            Continuar c= new Continuar(new Frame(), true);
-            jProgressBar1.setValue(50);
-            c.setVisible(true);
-            while (!fin) {
-                Thread.onSpinWait();
+        SwingWorker<Void, Integer> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() {
+                publish(10);
+                try {
+                    Runtime.getRuntime().exec(new String[]{rutaArchivo, "/x", rutaSave});
+                    publish(50);
+                    CountDownLatch latch = new CountDownLatch(1);
+                    SwingUtilities.invokeLater(() -> {
+                        Continuar c = new Continuar(Inicio.this, false, latch);
+                        c.setLocationRelativeTo(Inicio.this);
+                        c.setVisible(true);
+                    });
+                    latch.await();
+                    String oldName = "%EXENAME%";
+                    File newFile = new File(rutaSave + FileSystems.getDefault().getSeparator() + oldName);
+                    String newName = "Exe.zip";
+                    boolean renamed = newFile.renameTo(new File(rutaSave + FileSystems.getDefault().getSeparator() + newName));
+                    SwingUtilities.invokeLater(() -> {
+                        if (renamed) {
+                            jTextArea1.setText(jTextArea1.getText() + "-El archivo que contiene lo que usted desea se llama Exe.zip");
+                        } else {
+                            jTextArea1.setText(jTextArea1.getText() + "-No se pudo generar el archivo");
+                        }
+                    });
+                    publish(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (Exception e) {
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                            new Frame(),
+                            "Imposible abrir el archivo.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE));
+                }
+                return null;
             }
-            String oldName = "%EXENAME%";
-            File newFile = new File(rutaSave + FileSystems.getDefault().getSeparator() + oldName);
-            String newName = "Exe.zip";
-            if (newFile.renameTo(new File(rutaSave + FileSystems.getDefault().getSeparator() + newName))) {
-                this.jTextArea1.setText(this.jTextArea1.getText() + "-El archivo que contiene lo que usted desea se llama Exe.zip");
-            } else {
-                this.jTextArea1.setText(this.jTextArea1.getText() + "-No se pudo generar el archivo");
+
+            @Override
+            protected void process(java.util.List<Integer> chunks) {
+                int value = chunks.getLast();
+                jProgressBar1.setValue(value);
             }
-            jProgressBar1.setValue(100);
-        } 
-        catch (Exception e) 
-        { 
-            // Se lanza una excepci�n si no se encuentra en ejecutable o el fichero no es ejecutable.
-            JOptionPane.showMessageDialog(new Frame(),"Imposible abrir el archivo.","Error", JOptionPane.ERROR_MESSAGE);
-        }
+        };
+        worker.execute();
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton2ActionPerformed() {//GEN-FIRST:event_jButton2ActionPerformed
@@ -160,6 +205,147 @@ public class Inicio extends javax.swing.JFrame {
         }
         this.jLabel1.setText(rutaArchivo);
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void showInfoDialog() {
+        JOptionPane.showMessageDialog(this, "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1>" +
+                "Creado por: <b>Juan Carlos Prieto Silos</b></html>\n" +
+                "Web Site: JCPrieto.es", "Info", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private void initUpdateCheck() {
+        if (Constantes.GITHUB_REPO.isEmpty()) {
+            return;
+        }
+        Thread updateThread = new Thread(this::checkForUpdates, "update-check");
+        updateThread.setDaemon(true);
+        updateThread.start();
+    }
+
+    private void checkForUpdates() {
+        String apiUrl = "https://api.github.com/repos/" + Constantes.GITHUB_REPO + "/releases/latest";
+        try (HttpClient client = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build()) {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(apiUrl))
+                    .header("Accept", "application/vnd.github+json")
+                    .header("User-Agent", Constantes.NOMBRE_APP)
+                    .GET()
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                return;
+            }
+            String body = response.body();
+            String latestVersion = extractJsonValue(body);
+            if (latestVersion == null || !isNewerVersion(latestVersion)) {
+                return;
+            }
+            String downloadUrl = extractAssetUrl(body, latestVersion);
+            if (downloadUrl == null) {
+                return;
+            }
+            SwingUtilities.invokeLater(() -> {
+                updateDownloadUrl = downloadUrl;
+                menuUpdateItem.setText("Nueva version disponible (" + normalizeVersion(latestVersion) + ")");
+                menuUpdateItem.setVisible(true);
+            });
+        } catch (Exception e) {
+            Logger.error("Comprobar actualizaciones", e);
+        }
+    }
+
+    private void openUpdateDownload() {
+        if (updateDownloadUrl == null || updateDownloadUrl.isEmpty()) {
+            return;
+        }
+        try {
+            Desktop.getDesktop().browse(URI.create(updateDownloadUrl));
+        } catch (Exception e) {
+            Logger.error("Abrir descarga de actualizacion", e);
+        }
+    }
+
+    private ImageIcon loadUpdateIcon() {
+        java.net.URL iconUrl = Inicio.class.getClassLoader().getResource("img/icons/update.png");
+        if (iconUrl == null) {
+            return null;
+        }
+        return new ImageIcon(iconUrl);
+    }
+
+    private String extractJsonValue(String json) {
+        Pattern pattern = Pattern.compile("\"" + Pattern.quote("tag_name") + "\"\\s*:\\s*\"([^\"]+)\"");
+        Matcher matcher = pattern.matcher(json);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
+    private String extractAssetUrl(String json, String latestVersion) {
+        String desiredAssetName = buildAssetName(latestVersion);
+        if (desiredAssetName != null && !desiredAssetName.isEmpty()) {
+            Pattern namedAsset = Pattern.compile("\\{[^}]*\"name\"\\s*:\\s*\"" +
+                    Pattern.quote(desiredAssetName) +
+                    "\"[^}]*\"browser_download_url\"\\s*:\\s*\"([^\"]+)\"");
+            Matcher matcher = namedAsset.matcher(json);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        }
+        Pattern zipAsset = Pattern.compile("\"browser_download_url\"\\s*:\\s*\"([^\"]+\\.zip)\"");
+        Matcher matcher = zipAsset.matcher(json);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
+    private String buildAssetName(String latestVersion) {
+        if (Constantes.GITHUB_ASSET_PATTERN == null || Constantes.GITHUB_ASSET_PATTERN.isEmpty()) {
+            return null;
+        }
+        String normalizedVersion = normalizeVersion(latestVersion);
+        return Constantes.GITHUB_ASSET_PATTERN.replace("{version}", normalizedVersion);
+    }
+
+    private boolean isNewerVersion(String latestVersion) {
+        int comparison = compareVersionParts(normalizeVersion(Constantes.VERSION), normalizeVersion(latestVersion));
+        return comparison < 0;
+    }
+
+    private String normalizeVersion(String version) {
+        if (version == null) {
+            return "";
+        }
+        String normalized = version.trim();
+        if (normalized.startsWith("v") || normalized.startsWith("V")) {
+            normalized = normalized.substring(1);
+        }
+        return normalized;
+    }
+
+    private int compareVersionParts(String currentVersion, String latestVersion) {
+        String[] currentParts = currentVersion.split("\\.");
+        String[] latestParts = latestVersion.split("\\.");
+        int max = Math.max(currentParts.length, latestParts.length);
+        for (int i = 0; i < max; i++) {
+            int current = i < currentParts.length ? parseVersionPart(currentParts[i]) : 0;
+            int latest = i < latestParts.length ? parseVersionPart(latestParts[i]) : 0;
+            if (current != latest) {
+                return Integer.compare(current, latest);
+            }
+        }
+        return currentVersion.compareTo(latestVersion);
+    }
+
+    private int parseVersionPart(String part) {
+        Matcher matcher = Pattern.compile("^(\\d+)").matcher(part);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return 0;
+    }
     
     /**
      * @param args the command line arguments
@@ -263,12 +449,14 @@ public class Inicio extends javax.swing.JFrame {
     // End of variables declaration                   
     
 }
-    
- public class Continuar extends javax.swing.JDialog {
+
+    public static class Continuar extends javax.swing.JDialog {
+        private final CountDownLatch latch;
     
     /** Creates new form Continuar */
-    Continuar(java.awt.Frame parent, boolean modal) {
+    Continuar(java.awt.Frame parent, boolean modal, CountDownLatch latch) {
         super(parent, modal);
+        this.latch = latch;
         initComponents();
     }
     
@@ -313,7 +501,7 @@ public class Inicio extends javax.swing.JFrame {
     }// </editor-fold>                        
 
     private void jButton1ActionPerformed() {
-        fin= true;
+        latch.countDown();
         dispose();
     }
 

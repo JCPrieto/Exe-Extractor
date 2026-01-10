@@ -21,18 +21,11 @@
             <directory>${project.build.directory}</directory>
             <outputDirectory>${file.separator}</outputDirectory>
             <includes>
-                <include>*.jar</include>
+                <include>${project.build.finalName}.jar</include>
             </includes>
         </fileSet>
     </fileSets>
     <dependencySets>
-        <dependencySet>
-            <outputDirectory>${file.separator}</outputDirectory>
-            <unpack>false</unpack>
-            <includes>
-                <include>${artifact}</include>
-            </includes>
-        </dependencySet>
         <dependencySet>
             <outputDirectory>${file.separator}libs</outputDirectory>
             <unpack>false</unpack>
