@@ -11,9 +11,13 @@ En cualquier caso, en Java 8 debería de compilar ya que lo unico que he actuali
 
 ### Requisitos ###
 
-* Java 11
+* Java 21
 
 ### Changelog ###
+
+* 2.0.2
+  * Actualización de seguridad
+  * Actualización a Java 21
 
 * 2.0.1
   * Actualización de seguridad

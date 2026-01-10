@@ -29,7 +29,7 @@ public class Inicio extends javax.swing.JFrame {
     private Inicio() {
         JOptionPane.showMessageDialog(new Frame(),"<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1>" +
                 "Creado por: <b>Juan Carlos Prieto Silos</b></html>\n" +
-                "Web Site: JCPrieto.tk","Info", JOptionPane.PLAIN_MESSAGE);
+                "Web Site: JCPrieto.es", "Info", JOptionPane.PLAIN_MESSAGE);
         initComponents();
     }
     
@@ -117,8 +117,7 @@ public class Inicio extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed() {//GEN-FIRST:event_jButton3ActionPerformed
         try {
-            String cad= rutaArchivo+" /x "+rutaSave;
-            Runtime.getRuntime().exec(cad);
+            Runtime.getRuntime().exec(new String[]{rutaArchivo, "/x", rutaSave});
             Continuar c= new Continuar(new Frame(), true);
             jProgressBar1.setValue(50);
             c.setVisible(true);
@@ -128,8 +127,11 @@ public class Inicio extends javax.swing.JFrame {
             String oldName = "%EXENAME%";
             File newFile = new File(rutaSave + FileSystems.getDefault().getSeparator() + oldName);
             String newName = "Exe.zip";
-            newFile.renameTo(new File(rutaSave + FileSystems.getDefault().getSeparator() + newName));
-            this.jTextArea1.setText(this.jTextArea1.getText()+"-El archivo que contiene lo que usted desea se llama Exe.zip");
+            if (newFile.renameTo(new File(rutaSave + FileSystems.getDefault().getSeparator() + newName))) {
+                this.jTextArea1.setText(this.jTextArea1.getText() + "-El archivo que contiene lo que usted desea se llama Exe.zip");
+            } else {
+                this.jTextArea1.setText(this.jTextArea1.getText() + "-No se pudo generar el archivo");
+            }
             jProgressBar1.setValue(100);
         } 
         catch (Exception e) 
