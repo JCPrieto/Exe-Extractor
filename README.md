@@ -6,14 +6,18 @@ La funcionalidad es sencilla: A partir de un instalador en formato .exe autoextr
 
 La implementé hace tanto tiempo, que realmente no recuerdo la motivación que me llevó a hacerla.
 
-Le he hecho 4 retoques esteticos para que se parezca a otras aplicaciones que he implementado mas recientemente, refactorizado un poco el código, integrado con Maven y subido la versión de compilación a Java 11 ya que en su momento la implementé en Java 5. 
-En cualquier caso, en Java 8 debería de compilar ya que lo unico que he actualizado al refactorizar es el uso de 4 o 5 lambdas.
+Le he hecho 4 retoques esteticos para que se parezca a otras aplicaciones que he implementado mas recientemente,
+refactorizado un poco el código, integrado con Maven y subido la versión de compilación a Java 21 ya que en su momento
+la implementé en Java 5.
 
 ### Requisitos ###
 
 * Java 21
 
 ### Changelog ###
+
+* 2.1.1
+  * Validaciones de rutas y ejecucion mediante `ProcessBuilder` con errores controlados.
 
 * 2.1.0
   * Comprobacion de nuevas versiones desde GitHub y enlace de descarga en el menu.

@@ -13,10 +13,12 @@ import es.jklabs.utilidades.Logger;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
@@ -39,6 +41,8 @@ public class Inicio extends javax.swing.JFrame {
         initUpdateCheck();
     }
     
+    private javax.swing.JButton jButton3;
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -58,7 +62,7 @@ public class Inicio extends javax.swing.JFrame {
         jProgressBar1 = new javax.swing.JProgressBar();
         JScrollPane jScrollPane1 = new JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        JButton jButton3 = new JButton();
+        jButton3 = new JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(Constantes.NOMBRE_APP);
@@ -94,6 +98,7 @@ public class Inicio extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTextArea1);
 
         jButton3.setText("Ejecutar");
+        jButton3.setEnabled(false);
         jButton3.addActionListener(evt -> jButton3ActionPerformed());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -139,12 +144,18 @@ public class Inicio extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton3ActionPerformed() {//GEN-FIRST:event_jButton3ActionPerformed
+        if (!validarRutas()) {
+            return;
+        }
+        jButton3.setEnabled(false);
         SwingWorker<Void, Integer> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() {
                 publish(10);
                 try {
-                    Runtime.getRuntime().exec(new String[]{rutaArchivo, "/x", rutaSave});
+                    ProcessBuilder processBuilder = new ProcessBuilder(rutaArchivo, "/x", rutaSave);
+                    processBuilder.redirectErrorStream(true);
+                    Process process = processBuilder.start();
                     publish(50);
                     CountDownLatch latch = new CountDownLatch(1);
                     SwingUtilities.invokeLater(() -> {
@@ -153,6 +164,12 @@ public class Inicio extends javax.swing.JFrame {
                         c.setVisible(true);
                     });
                     latch.await();
+                    int exitCode = process.waitFor();
+                    if (exitCode != 0) {
+                        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                        SwingUtilities.invokeLater(() -> showError("Error al extraer el archivo (codigo " + exitCode + ").\n" + output));
+                        return null;
+                    }
                     String oldName = "%EXENAME%";
                     File newFile = new File(rutaSave + FileSystems.getDefault().getSeparator() + oldName);
                     String newName = "Exe.zip";
@@ -167,12 +184,10 @@ public class Inicio extends javax.swing.JFrame {
                     publish(100);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                } catch (IOException e) {
+                    SwingUtilities.invokeLater(() -> showError("Imposible abrir el archivo."));
                 } catch (Exception e) {
-                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
-                            new Frame(),
-                            "Imposible abrir el archivo.",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE));
+                    SwingUtilities.invokeLater(() -> showError("Error inesperado al extraer el archivo."));
                 }
                 return null;
             }
@@ -181,6 +196,11 @@ public class Inicio extends javax.swing.JFrame {
             protected void process(java.util.List<Integer> chunks) {
                 int value = chunks.getLast();
                 jProgressBar1.setValue(value);
+            }
+
+            @Override
+            protected void done() {
+                jButton3.setEnabled(validarRutasSilencioso());
             }
         };
         worker.execute();
@@ -192,8 +212,11 @@ public class Inicio extends javax.swing.JFrame {
         int choice = sd.jFileChooser1.showOpenDialog(parent);
         if (choice == JFileChooser.APPROVE_OPTION){
             rutaSave= sd.jFileChooser1.getSelectedFile().getAbsolutePath();
+            this.jLabel2.setText(rutaSave);
+            updateExecuteState();
+            return;
         }
-        this.jLabel2.setText(rutaSave);
+        updateExecuteState();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed() {//GEN-FIRST:event_jButton1ActionPerformed
@@ -202,9 +225,58 @@ public class Inicio extends javax.swing.JFrame {
         int choice = o.jFileChooser1.showOpenDialog(parent);
         if (choice == JFileChooser.APPROVE_OPTION){
             rutaArchivo= o.jFileChooser1.getSelectedFile().getAbsolutePath();
+            this.jLabel1.setText(rutaArchivo);
+            updateExecuteState();
+            return;
         }
-        this.jLabel1.setText(rutaArchivo);
+        updateExecuteState();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void updateExecuteState() {
+        jButton3.setEnabled(validarRutasSilencioso());
+    }
+
+    private boolean validarRutasSilencioso() {
+        return validarArchivo(rutaArchivo, false) && validarDirectorio(rutaSave, false);
+    }
+
+    private boolean validarRutas() {
+        return validarArchivo(rutaArchivo, true) && validarDirectorio(rutaSave, true);
+    }
+
+    private boolean validarArchivo(String ruta, boolean mostrarError) {
+        if (ruta == null || ruta.isBlank()) {
+            if (mostrarError) {
+                showError("Selecciona un archivo de origen valido.");
+            }
+            return false;
+        }
+        File archivo = new File(ruta);
+        if (!archivo.isFile()) {
+            if (mostrarError) {
+                showError("El archivo de origen no existe.");
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validarDirectorio(String ruta, boolean mostrarError) {
+        if (ruta == null || ruta.isBlank()) {
+            if (mostrarError) {
+                showError("Selecciona un directorio de destino valido.");
+            }
+            return false;
+        }
+        File dir = new File(ruta);
+        if (!dir.isDirectory()) {
+            if (mostrarError) {
+                showError("El directorio de destino no existe.");
+            }
+            return false;
+        }
+        return true;
+    }
 
     private void showInfoDialog() {
         JOptionPane.showMessageDialog(this, "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1>" +
@@ -512,6 +584,10 @@ public class Inicio extends javax.swing.JFrame {
 
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+
+    private void showError(String message) {
+        JOptionPane.showMessageDialog(new Frame(), message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JTextArea jTextArea1;
     // End of variables declaration//GEN-END:variables
