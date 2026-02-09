@@ -2,10 +2,15 @@ package es.jklabs;
 
 import es.jklabs.utilidades.Constantes;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import sun.misc.Unsafe;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -109,5 +114,36 @@ class InicioTest {
                 "\"browser_download_url\":\"https://example.com/first.zip\"}]}";
         assertEquals("https://example.com/first.zip", invoke(inicio, "extractAssetUrl",
                 new Class<?>[]{String.class, String.class}, zipFallbackJson, "1.0"));
+    }
+
+    @Test
+    void normalizeZipNameUsesConfiguredValue() {
+        Inicio inicio = newInstanceWithoutConstructor();
+        assertEquals("Exe.zip", invoke(inicio, "normalizeZipName", new Class<?>[]{}));
+    }
+
+    @Test
+    void resolveOutputFileAddsNumericSuffixWhenTargetExists(@TempDir Path tempDir) throws IOException {
+        Inicio inicio = newInstanceWithoutConstructor();
+        Files.createFile(tempDir.resolve("Exe.zip"));
+        Files.createFile(tempDir.resolve("Exe-1.zip"));
+
+        File resolved = (File) invoke(inicio, "resolveOutputFile",
+                new Class<?>[]{File.class, String.class}, tempDir.toFile(), "Exe.zip");
+
+        assertEquals("Exe-2.zip", resolved.getName());
+    }
+
+    @Test
+    void detectarArchivoGeneradoPrefersPlaceholder(@TempDir Path tempDir) throws IOException {
+        Inicio inicio = newInstanceWithoutConstructor();
+        File[] beforeFiles = new File[0];
+        Files.createFile(tempDir.resolve("%EXENAME%"));
+        Files.createFile(tempDir.resolve("otro.dat"));
+
+        File detected = (File) invoke(inicio, "detectarArchivoGenerado",
+                new Class<?>[]{File.class, File[].class}, tempDir.toFile(), beforeFiles);
+
+        assertEquals("%EXENAME%", detected.getName());
     }
 }

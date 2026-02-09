@@ -19,7 +19,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -153,6 +158,8 @@ public class Inicio extends javax.swing.JFrame {
             protected Void doInBackground() {
                 publish(10);
                 try {
+                    File outputDir = new File(rutaSave);
+                    File[] filesBefore = listFiles(outputDir);
                     ProcessBuilder processBuilder = new ProcessBuilder(rutaArchivo, "/x", rutaSave);
                     processBuilder.redirectErrorStream(true);
                     Process process = processBuilder.start();
@@ -170,17 +177,19 @@ public class Inicio extends javax.swing.JFrame {
                         SwingUtilities.invokeLater(() -> showError("Error al extraer el archivo (codigo " + exitCode + ").\n" + output));
                         return null;
                     }
-                    String oldName = "%EXENAME%";
-                    File newFile = new File(rutaSave + FileSystems.getDefault().getSeparator() + oldName);
-                    String newName = "Exe.zip";
-                    boolean renamed = newFile.renameTo(new File(rutaSave + FileSystems.getDefault().getSeparator() + newName));
-                    SwingUtilities.invokeLater(() -> {
-                        if (renamed) {
-                            jTextArea1.setText(jTextArea1.getText() + "-El archivo que contiene lo que usted desea se llama Exe.zip");
-                        } else {
-                            jTextArea1.setText(jTextArea1.getText() + "-No se pudo generar el archivo");
-                        }
-                    });
+                    File generatedFile = detectarArchivoGenerado(outputDir, filesBefore);
+                    if (generatedFile == null) {
+                        SwingUtilities.invokeLater(() -> showError("No se pudo detectar el archivo generado por el instalador."));
+                        return null;
+                    }
+                    File outputFile = resolveOutputFile(outputDir);
+                    boolean sameFile = generatedFile.getCanonicalFile().equals(outputFile.getCanonicalFile());
+                    if (!sameFile) {
+                        Files.move(generatedFile.toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    String outputName = outputFile.getName();
+                    SwingUtilities.invokeLater(() -> jTextArea1.setText(jTextArea1.getText() + "-El archivo que contiene lo que usted desea se llama " +
+                            outputName + "\n"));
                     publish(100);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -276,6 +285,74 @@ public class Inicio extends javax.swing.JFrame {
             return false;
         }
         return true;
+    }
+
+    private File[] listFiles(File directory) {
+        File[] files = directory.listFiles(File::isFile);
+        return files != null ? files : new File[0];
+    }
+
+    private File detectarArchivoGenerado(File outputDir, File[] filesBefore) {
+        File placeholder = new File(outputDir, "%EXENAME%");
+        if (placeholder.isFile()) {
+            return placeholder;
+        }
+
+        Set<String> existingNames = new HashSet<>();
+        for (File file : filesBefore) {
+            existingNames.add(file.getName());
+        }
+
+        File newestNewFile = null;
+        for (File file : listFiles(outputDir)) {
+            if (!existingNames.contains(file.getName())) {
+                if (newestNewFile == null || file.lastModified() > newestNewFile.lastModified()) {
+                    newestNewFile = file;
+                }
+            }
+        }
+        if (newestNewFile != null) {
+            return newestNewFile;
+        }
+
+        return Arrays.stream(listFiles(outputDir))
+                .max(Comparator.comparingLong(File::lastModified))
+                .orElse(null);
+    }
+
+    private File resolveOutputFile(File outputDir) {
+        String normalizedName = normalizeZipName();
+        return resolveOutputFile(outputDir, normalizedName);
+    }
+
+    private File resolveOutputFile(File outputDir, String normalizedName) {
+        File outputFile = new File(outputDir, normalizedName);
+        if (!outputFile.exists()) {
+            return outputFile;
+        }
+        int extensionIndex = normalizedName.toLowerCase().lastIndexOf(".zip");
+        String baseName = normalizedName.substring(0, extensionIndex);
+        String extension = normalizedName.substring(extensionIndex);
+        int index = 1;
+        while (outputFile.exists()) {
+            outputFile = new File(outputDir, baseName + "-" + index + extension);
+            index++;
+        }
+        return outputFile;
+    }
+
+    private String normalizeZipName() {
+        if (Constantes.OUTPUT_ZIP_NAME == null || Constantes.OUTPUT_ZIP_NAME.isBlank()) {
+            return "Exe.zip";
+        }
+        String filename = new File(Constantes.OUTPUT_ZIP_NAME.trim()).getName();
+        if (filename.isBlank()) {
+            return "Exe.zip";
+        }
+        if (filename.toLowerCase().endsWith(".zip")) {
+            return filename;
+        }
+        return filename + ".zip";
     }
 
     private void showInfoDialog() {

@@ -9,6 +9,7 @@ public class Constantes {
     public static final String VERSION = cargarVersion();
     public static final String GITHUB_REPO = cargarPropiedad("app.github.repo", "");
     public static final String GITHUB_ASSET_PATTERN = cargarPropiedad("app.github.asset.pattern", "ExeExtractor-{version}.zip");
+    public static final String OUTPUT_ZIP_NAME = cargarPropiedad("app.output.zip.name", "Exe.zip");
 
     private Constantes() {
 
