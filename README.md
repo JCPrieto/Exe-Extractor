@@ -18,29 +18,7 @@ la implementé en Java 5.
 
 ### Changelog ###
 
-* 2.1.1
-  * Validaciones de rutas y ejecucion mediante `ProcessBuilder` con errores controlados.
-
-* 2.1.0
-  * Comprobacion de nuevas versiones desde GitHub y enlace de descarga en el menu.
-  * Version y metadatos movidos a `app.properties` con filtrado de recursos Maven.
-  * Ajustes de empaquetado (nombre final del jar/zip) y scripts de lanzamiento.
-  * Pruebas unitarias basicas para la logica de versiones.
-  * Workflow de release en GitHub Actions.
-
-* 2.0.2
-  * Actualización de seguridad
-  * Actualización a Java 21
-
-* 2.0.1
-  * Actualización de seguridad
-
-* 2.0.0
-
-    * Migracion a Java 11.
-    * Integracion con Maven.
-    * Look & Feel del sistema operativo en el que corrá.
-    * Refactorización sencilla del código. 
+Consulta el historial de cambios en [`CHANGELOG.md`](CHANGELOG.md).
 
 ### Licencia ### 
 

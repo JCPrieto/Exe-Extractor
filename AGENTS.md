@@ -34,8 +34,10 @@
 - Keep commits focused; prefer imperative, single-line subjects.
 - PRs should include: a brief summary, how you tested (`mvn clean package`, manual GUI run), and any relevant
   screenshots if UI behavior changes.
+- When preparing a release, bump `pom.xml` version and add an entry in `CHANGELOG.md` with the date and highlights.
 
 ## Configuration & Runtime Notes
 
 - The app is a Swing GUI that extracts self-extracting `.exe` installers into `.zip` files.
+- Output ZIP filename is configurable via `src/main/resources/app.properties` key `app.output.zip.name`.
 - Ensure the target runtime has a JRE/JDK 21; Java 8+ may work but is not guaranteed.
