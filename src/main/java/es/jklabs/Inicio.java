@@ -398,6 +398,9 @@ public class Inicio extends javax.swing.JFrame {
                 menuUpdateItem.setText("Nueva version disponible (" + normalizeVersion(latestVersion) + ")");
                 menuUpdateItem.setVisible(true);
             });
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            Logger.error("Comprobar actualizaciones", e);
         } catch (Exception e) {
             Logger.error("Comprobar actualizaciones", e);
         }
