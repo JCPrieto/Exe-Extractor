@@ -1,5 +1,7 @@
 # Exe Extractor #
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=JCPrieto_Exe-Extractor&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=JCPrieto_Exe-Extractor)
+
 Esta aplicación la implementé en los primera años de la carrera y la subo a Github para que no se pierda.
 
 La funcionalidad es sencilla: A partir de un instalador en formato .exe autoextraible, lo descomprime y lo convierte en un archivo .zip.
