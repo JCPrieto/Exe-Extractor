@@ -6,6 +6,8 @@
 
 package es.jklabs;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import es.jklabs.file.filter.ExeFilter;
 import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
@@ -21,6 +23,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -34,6 +37,9 @@ import java.util.regex.Pattern;
  * @author  Juanky
  */
 public class Inicio extends javax.swing.JFrame {
+    private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+    private static final Duration UPDATE_CONNECT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration UPDATE_REQUEST_TIMEOUT = Duration.ofSeconds(10);
     
     private String rutaArchivo;
     private String rutaSave= "";
@@ -373,11 +379,13 @@ public class Inicio extends javax.swing.JFrame {
     private void checkForUpdates() {
         String apiUrl = "https://api.github.com/repos/" + Constantes.GITHUB_REPO + "/releases/latest";
         try (HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(UPDATE_CONNECT_TIMEOUT)
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build()) {
             HttpRequest request = HttpRequest.newBuilder(URI.create(apiUrl))
                     .header("Accept", "application/vnd.github+json")
                     .header("User-Agent", Constantes.NOMBRE_APP)
+                    .timeout(UPDATE_REQUEST_TIMEOUT)
                     .GET()
                     .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -411,7 +419,16 @@ public class Inicio extends javax.swing.JFrame {
             return;
         }
         try {
-            Desktop.getDesktop().browse(URI.create(updateDownloadUrl));
+            if (!Desktop.isDesktopSupported()) {
+                showError("No se puede abrir el navegador automaticamente en este sistema.");
+                return;
+            }
+            Desktop desktop = Desktop.getDesktop();
+            if (!desktop.isSupported(Desktop.Action.BROWSE)) {
+                showError("El sistema no soporta apertura de enlaces web.");
+                return;
+            }
+            desktop.browse(URI.create(updateDownloadUrl));
         } catch (Exception e) {
             Logger.error("Abrir descarga de actualizacion", e);
         }
@@ -426,31 +443,60 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private String extractJsonValue(String json) {
-        Pattern pattern = Pattern.compile("\"" + Pattern.quote("tag_name") + "\"\\s*:\\s*\"([^\"]+)\"");
-        Matcher matcher = pattern.matcher(json);
-        if (matcher.find()) {
-            return matcher.group(1);
+        JsonNode release = readJson(json);
+        if (release == null) {
+            return null;
+        }
+        JsonNode tagName = release.get("tag_name");
+        if (tagName == null || tagName.isNull()) {
+            return null;
+        }
+        return tagName.asText();
+    }
+
+    private String extractAssetUrl(String json, String latestVersion) {
+        JsonNode release = readJson(json);
+        if (release == null) {
+            return null;
+        }
+        JsonNode assets = release.get("assets");
+        if (assets == null || !assets.isArray()) {
+            return null;
+        }
+        String desiredAssetName = buildAssetName(latestVersion);
+        if (desiredAssetName != null && !desiredAssetName.isBlank()) {
+            for (JsonNode asset : assets) {
+                JsonNode assetName = asset.get("name");
+                if (assetName != null && desiredAssetName.equals(assetName.asText())) {
+                    JsonNode browserUrl = asset.get("browser_download_url");
+                    if (browserUrl != null && !browserUrl.isNull()) {
+                        return browserUrl.asText();
+                    }
+                }
+            }
+        }
+        for (JsonNode asset : assets) {
+            JsonNode browserUrl = asset.get("browser_download_url");
+            if (browserUrl != null && !browserUrl.isNull()) {
+                String url = browserUrl.asText();
+                if (url.toLowerCase().endsWith(".zip")) {
+                    return url;
+                }
+            }
         }
         return null;
     }
 
-    private String extractAssetUrl(String json, String latestVersion) {
-        String desiredAssetName = buildAssetName(latestVersion);
-        if (desiredAssetName != null && !desiredAssetName.isEmpty()) {
-            Pattern namedAsset = Pattern.compile("\\{[^}]*\"name\"\\s*:\\s*\"" +
-                    Pattern.quote(desiredAssetName) +
-                    "\"[^}]*\"browser_download_url\"\\s*:\\s*\"([^\"]+)\"");
-            Matcher matcher = namedAsset.matcher(json);
-            if (matcher.find()) {
-                return matcher.group(1);
-            }
+    private JsonNode readJson(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
         }
-        Pattern zipAsset = Pattern.compile("\"browser_download_url\"\\s*:\\s*\"([^\"]+\\.zip)\"");
-        Matcher matcher = zipAsset.matcher(json);
-        if (matcher.find()) {
-            return matcher.group(1);
+        try {
+            return JSON_MAPPER.readTree(json);
+        } catch (IOException e) {
+            Logger.error("Parsear respuesta de actualizaciones", e);
+            return null;
         }
-        return null;
     }
 
     private String buildAssetName(String latestVersion) {
