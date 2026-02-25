@@ -11,6 +11,7 @@
 
 - `mvn clean package` builds the jar and assembles a distributable zip with dependencies.
 - `mvn -q clean package` does the same with quieter output for CI/logs.
+- `mvn -B verify` is the CI-equivalent command (build + tests) used in GitHub Actions.
 - `java -jar target/ExeExtractor.jar` runs the GUI after building.
 - `./Exe\ Extractor.sh` or `Exe Extractor.bat` runs the packaged app on Unix/Windows.
 
@@ -35,6 +36,8 @@
 - PRs should include: a brief summary, how you tested (`mvn clean package`, manual GUI run), and any relevant
   screenshots if UI behavior changes.
 - When preparing a release, bump `pom.xml` version and add an entry in `CHANGELOG.md` with the date and highlights.
+- Release automation: after a successful push to `master`, CI creates and pushes tag `v<project.version>` if
+  `pom.xml` version changed; Release workflow publishes artifacts from pushed `v*` tags.
 
 ## Configuration & Runtime Notes
 

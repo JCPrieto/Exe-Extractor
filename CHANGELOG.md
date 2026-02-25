@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.2.1 - 2026-02-25
+
+- Fixed: update-check JSON parsing migrated from regex to Jackson (`ObjectMapper`) for better reliability with GitHub
+  API payloads.
+- Fixed: update-check HTTP client now uses explicit connect/request timeouts to avoid blocking calls.
+- Fixed: safer browser launch checks (`Desktop` support and `BROWSE` capability) before opening release URLs.
+- Changed: GitHub Actions CI consolidated with Java 21, SonarQube analysis on `master`, and automatic version tag
+  creation when `pom.xml` version changes after successful tests.
+- Changed: GitHub release workflow now publishes on pushed tags (`v*`) and supports manual dispatch with explicit
+  `tag_name`.
+- Changed: dependencies updated (`junit-jupiter` `6.0.3`, `maven-surefire-plugin` `3.5.5`) and Sonar organization
+  property added in Maven config.
+
 ## 2.2.0 - 2026-02-09
 
 - Added: detection of generated output file based on placeholder, new files, and fallback to newest file.
