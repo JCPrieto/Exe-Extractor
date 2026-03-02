@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.3.0 - 2026-03-02
+
+- Added: installer picker now accepts `.msi` files in addition to `.exe` files.
+- Added: UI labels/messages moved to `app.properties` for easier maintenance and localization readiness.
+- Added: centralized error message keys in `i18n/errores.properties`.
+- Added: unit tests for `Constantes` to validate configuration loading and utility-class constructor visibility.
+- Changed: GitHub Actions permissions narrowed to job-level (`contents: read`) in CI workflow.
+- Changed: release workflow checkout hardened to trusted `refs/heads/master` to prevent executing untrusted fork code.
+- Fixed: logging/message key usage normalized for update-check, update-download, JSON parse and look-and-feel errors.
+
 ## 2.2.1 - 2026-02-25
 
 - Fixed: update-check JSON parsing migrated from regex to Jackson (`ObjectMapper`) for better reliability with GitHub

@@ -41,6 +41,6 @@
 
 ## Configuration & Runtime Notes
 
-- The app is a Swing GUI that extracts self-extracting `.exe` installers into `.zip` files.
+- The app is a Swing GUI that extracts self-extracting installer packages (`.exe` and `.msi`) into `.zip` files.
 - Output ZIP filename is configurable via `src/main/resources/app.properties` key `app.output.zip.name`.
 - Ensure the target runtime has a JRE/JDK 21; Java 8+ may work but is not guaranteed.
