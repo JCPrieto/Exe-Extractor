@@ -10,13 +10,14 @@ public class Mensajes {
     }
 
     private static String getResource(String resource, String key) {
-        ResourceBundle bundle = ResourceBundle.getBundle(resource, Locale.getDefault());
-        String text;
-        try {
-            text = bundle.getString(key);
-        } catch (MissingResourceException e) {
-            text = key;
+        if (key == null || key.isBlank()) {
+            return "";
         }
-        return text;
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle(resource, Locale.getDefault());
+            return bundle.getString(key);
+        } catch (MissingResourceException e) {
+            return key;
+        }
     }
 }
