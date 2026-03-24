@@ -226,10 +226,9 @@ public class Inicio extends javax.swing.JFrame {
 
         File newestNewFile = null;
         for (File file : listFiles(outputDir)) {
-            if (!existingNames.contains(file.getName())) {
-                if (newestNewFile == null || file.lastModified() > newestNewFile.lastModified()) {
-                    newestNewFile = file;
-                }
+            if (!existingNames.contains(file.getName()) &&
+                    (newestNewFile == null || file.lastModified() > newestNewFile.lastModified())) {
+                newestNewFile = file;
             }
         }
         if (newestNewFile != null) {
