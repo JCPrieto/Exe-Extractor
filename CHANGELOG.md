@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.3.1 - 2026-03-24
+
+- Changed: build now generates JaCoCo coverage reports during `mvn verify` and exposes the XML report path for SonarQube
+  analysis.
+- Changed: `jackson-databind` updated from `2.21.1` to `2.21.2`.
+- Changed: simplified generated-file detection logic in `Inicio.java` without changing the expected behavior.
+
 ## 2.3.0 - 2026-03-02
 
 - Added: installer picker now accepts `.msi` files in addition to `.exe` files.

@@ -11,7 +11,8 @@
 
 - `mvn clean package` builds the jar and assembles a distributable zip with dependencies.
 - `mvn -q clean package` does the same with quieter output for CI/logs.
-- `mvn -B verify` is the CI-equivalent command (build + tests) used in GitHub Actions.
+- `mvn verify` runs tests and generates the JaCoCo coverage report used by SonarQube (`target/site/jacoco/jacoco.xml`).
+- `mvn -B verify` is the CI-equivalent command (build + tests + coverage report) used in GitHub Actions.
 - `java -jar target/ExeExtractor.jar` runs the GUI after building.
 - `./Exe\ Extractor.sh` or `Exe Extractor.bat` runs the packaged app on Unix/Windows.
 
@@ -27,7 +28,7 @@
 - Automated tests live under `src/test/java` and are named `*Test.java`.
 - Each time we create a new class or a new public method, add its corresponding unit test.
 - When modifying a method, review existing tests and update them if behavior changes.
-- Use `mvn test` to run tests and note results in PRs.
+- Use `mvn test` for a quick validation and `mvn verify` when you also need the JaCoCo coverage artifacts.
 
 ## Commit & Pull Request Guidelines
 
