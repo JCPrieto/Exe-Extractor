@@ -654,7 +654,7 @@ public class Inicio extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
 
     public static class Continuar extends javax.swing.JDialog {
-        private final CountDownLatch latch;
+        private transient final CountDownLatch latch;
 
     /** Creates new form Continuar */
     Continuar(java.awt.Frame parent, boolean modal, CountDownLatch latch) {
