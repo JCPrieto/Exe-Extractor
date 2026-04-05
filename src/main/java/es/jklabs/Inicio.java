@@ -451,31 +451,29 @@ public class Inicio extends javax.swing.JFrame {
 
     private String extractAssetUrl(String json, String latestVersion) {
         JsonNode release = readJson(json);
-        if (release == null) {
-            return null;
-        }
-        JsonNode assets = release.get("assets");
-        if (assets == null || !assets.isArray()) {
-            return null;
-        }
-        String desiredAssetName = buildAssetName(latestVersion);
-        if (desiredAssetName != null && !desiredAssetName.isBlank()) {
-            for (JsonNode asset : assets) {
-                JsonNode assetName = asset.get("name");
-                if (assetName != null && desiredAssetName.equals(assetName.asText())) {
-                    JsonNode browserUrl = asset.get("browser_download_url");
-                    if (browserUrl != null && !browserUrl.isNull()) {
-                        return browserUrl.asText();
+        if (release != null) {
+            JsonNode assets = release.get("assets");
+            if (assets != null && assets.isArray()) {
+                String desiredAssetName = buildAssetName(latestVersion);
+                if (desiredAssetName != null && !desiredAssetName.isBlank()) {
+                    for (JsonNode asset : assets) {
+                        JsonNode assetName = asset.get("name");
+                        if (assetName != null && desiredAssetName.equals(assetName.asText())) {
+                            JsonNode browserUrl = asset.get("browser_download_url");
+                            if (browserUrl != null && !browserUrl.isNull()) {
+                                return browserUrl.asText();
+                            }
+                        }
                     }
                 }
-            }
-        }
-        for (JsonNode asset : assets) {
-            JsonNode browserUrl = asset.get("browser_download_url");
-            if (browserUrl != null && !browserUrl.isNull()) {
-                String url = browserUrl.asText();
-                if (url.toLowerCase().endsWith(".zip")) {
-                    return url;
+                for (JsonNode asset : assets) {
+                    JsonNode browserUrl = asset.get("browser_download_url");
+                    if (browserUrl != null && !browserUrl.isNull()) {
+                        String url = browserUrl.asText();
+                        if (url.toLowerCase().endsWith(".zip")) {
+                            return url;
+                        }
+                    }
                 }
             }
         }
