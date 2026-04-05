@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.2 - 2026-04-05
+
+- Fixed: `Continuar` marca su `CountDownLatch` como `transient` para evitar problemas de serialización del diálogo.
+- Changed: simplificada la lógica de `extractAssetUrl` en `Inicio.java`, manteniendo la prioridad por asset nombrado y
+  el fallback a ZIP.
+- Changed: `jacoco-maven-plugin` actualizado de `0.8.13` a `0.8.14`.
+- Added: tests unitarios para `ExeFilter` que cubren directorios, extensiones válidas y nombres no válidos.
+
 ## 2.3.1 - 2026-03-24
 
 - Changed: build now generates JaCoCo coverage reports during `mvn verify` and exposes the XML report path for SonarQube
