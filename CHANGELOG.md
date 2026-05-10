@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.3.3 - 2026-05-10
+
+- Changed: `jackson-databind` actualizado de `2.21.2` a `2.21.3`.
+- Changed: release workflow limitado a `master` y protegido contra ejecucion de codigo procedente de forks.
+- Fixed: orden de modificadores de `Continuar.latch` ajustado para cumplir las reglas de analisis estatico.
+- Added: tests unitarios para `Logger` que cubren la limpieza de logs vacios y la inicializacion idempotente.
+
 ## 2.3.2 - 2026-04-05
 
 - Fixed: `Continuar` marca su `CountDownLatch` como `transient` para evitar problemas de serialización del diálogo.
