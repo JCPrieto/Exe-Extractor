@@ -18,7 +18,14 @@ import java.io.File;
  */
 public class ExeFilter extends FileFilter {
 
-    /** Creates a new instance of ExeFilter */
+    /**
+     * Constructs a new instance of the ExeFilter class.
+     * <p>
+     * This file filter implementation is designed to work with file dialogs
+     * or file selection mechanisms, filtering and allowing only files
+     * with extensions ".exe" and ".msi", as well as directories.
+     * It identifies the file extensions in a case-insensitive manner.
+     */
     public ExeFilter() {
     }
 
