@@ -37,8 +37,8 @@
 - PRs should include: a brief summary, how you tested (`mvn clean package`, manual GUI run), and any relevant
   screenshots if UI behavior changes.
 - When preparing a release, bump `pom.xml` version and add an entry in `CHANGELOG.md` with the date and highlights.
-- Release automation: Release workflow runs after successful `CI` completion on trusted pushes to `master`, builds
-  distributables, and publishes GitHub release artifacts using `v<project.version>`.
+- Release automation: after successful `CI` completion on trusted pushes to `master`, CI uploads the release
+  artifacts and the Release workflow publishes them using `v<project.version>`.
 
 ## Configuration & Runtime Notes
 

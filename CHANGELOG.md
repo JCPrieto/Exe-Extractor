@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.4 - 2026-06-01
+
+- Changed: `junit-jupiter` actualizado de `6.0.3` a `6.1.0`, `jackson-databind` de `2.21.3` a `2.21.4`
+  y `maven-surefire-plugin` de `3.5.5` a `3.5.6`.
+- Changed: release workflow endurecido para no hacer checkout ni ejecutar codigo en el job con permisos de publicacion;
+  los artefactos se generan en el CI trusted de `master` y el release solo los descarga y publica.
+- Changed: refactorizada la seleccion de asset ZIP de actualizacion en `Inicio` sin cambiar el comportamiento esperado.
+- Changed: documentacion del constructor de `ExeFilter` actualizada para reflejar el soporte de `.exe` y `.msi`.
+- Added: tests unitarios para `Mensajes` que cubren claves nulas, vacias, existentes y fallback de claves inexistentes.
+- Fixed: `Mensajes` ahora es una clase de utilidad no instanciable.
+
 ## 2.3.3 - 2026-05-10
 
 - Changed: `jackson-databind` actualizado de `2.21.2` a `2.21.3`.
