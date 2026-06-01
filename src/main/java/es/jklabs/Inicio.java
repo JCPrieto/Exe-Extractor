@@ -449,6 +449,19 @@ public class Inicio extends javax.swing.JFrame {
         return tagName.asText();
     }
 
+    private static String getZipUrl(JsonNode assets) {
+        for (JsonNode asset : assets) {
+            JsonNode browserUrl = asset.get("browser_download_url");
+            if (browserUrl != null && !browserUrl.isNull()) {
+                String url = browserUrl.asText();
+                if (url.toLowerCase().endsWith(".zip")) {
+                    return url;
+                }
+            }
+        }
+        return null;
+    }
+
     private String extractAssetUrl(String json, String latestVersion) {
         JsonNode release = readJson(json);
         if (release != null) {
@@ -466,15 +479,7 @@ public class Inicio extends javax.swing.JFrame {
                         }
                     }
                 }
-                for (JsonNode asset : assets) {
-                    JsonNode browserUrl = asset.get("browser_download_url");
-                    if (browserUrl != null && !browserUrl.isNull()) {
-                        String url = browserUrl.asText();
-                        if (url.toLowerCase().endsWith(".zip")) {
-                            return url;
-                        }
-                    }
-                }
+                return getZipUrl(assets);
             }
         }
         return null;
