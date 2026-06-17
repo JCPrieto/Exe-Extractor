@@ -47,7 +47,7 @@ jobs:
           test -n "$(find release-artifacts -maxdepth 1 -name '*.zip' -print -quit)"
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
         with:
           tag_name: v${{ steps.version.outputs.app_version }}
           name: v${{ steps.version.outputs.app_version }}
