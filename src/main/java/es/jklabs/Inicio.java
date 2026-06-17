@@ -464,25 +464,54 @@ public class Inicio extends javax.swing.JFrame {
 
     private String extractAssetUrl(String json, String latestVersion) {
         JsonNode release = readJson(json);
-        if (release != null) {
-            JsonNode assets = release.get("assets");
-            if (assets != null && assets.isArray()) {
-                String desiredAssetName = buildAssetName(latestVersion);
-                if (desiredAssetName != null && !desiredAssetName.isBlank()) {
-                    for (JsonNode asset : assets) {
-                        JsonNode assetName = asset.get("name");
-                        if (assetName != null && desiredAssetName.equals(assetName.asText())) {
-                            JsonNode browserUrl = asset.get("browser_download_url");
-                            if (browserUrl != null && !browserUrl.isNull()) {
-                                return browserUrl.asText();
-                            }
-                        }
-                    }
+        JsonNode assets = getReleaseAssets(release);
+        if (assets == null) {
+            return null;
+        }
+        String namedAssetUrl = getNamedAssetUrl(assets, buildAssetName(latestVersion));
+        if (namedAssetUrl != null) {
+            return namedAssetUrl;
+        }
+        return getZipUrl(assets);
+    }
+
+    private JsonNode getReleaseAssets(JsonNode release) {
+        if (release == null) {
+            return null;
+        }
+        JsonNode assets = release.get("assets");
+        if (assets == null || !assets.isArray()) {
+            return null;
+        }
+        return assets;
+    }
+
+    private String getNamedAssetUrl(JsonNode assets, String desiredAssetName) {
+        if (desiredAssetName == null || desiredAssetName.isBlank()) {
+            return null;
+        }
+        for (JsonNode asset : assets) {
+            if (isNamedAsset(asset, desiredAssetName)) {
+                String browserUrl = getBrowserDownloadUrl(asset);
+                if (browserUrl != null) {
+                    return browserUrl;
                 }
-                return getZipUrl(assets);
             }
         }
         return null;
+    }
+
+    private boolean isNamedAsset(JsonNode asset, String desiredAssetName) {
+        JsonNode assetName = asset.get("name");
+        return assetName != null && desiredAssetName.equals(assetName.asText());
+    }
+
+    private String getBrowserDownloadUrl(JsonNode asset) {
+        JsonNode browserUrl = asset.get("browser_download_url");
+        if (browserUrl == null || browserUrl.isNull()) {
+            return null;
+        }
+        return browserUrl.asText();
     }
 
     private void openUpdateDownload() {
