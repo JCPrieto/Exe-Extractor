@@ -5,6 +5,8 @@
 - `src/main/java/` holds the application source (package `es.jklabs` and subpackages).
 - `src/assembly/cfg.xml` defines the Maven assembly used to build a distributable zip.
 - `Exe Extractor.sh` and `Exe Extractor.bat` are convenience launchers for the packaged app.
+- `ExeExtractor.desktop` and `src/main/resources/img/icons/app-icon.*` provide Linux desktop integration metadata
+  and the application icon.
 - `target/` is Maven output (jars, libs, and the assembled zip); do not edit by hand.
 
 ## Build, Test, and Development Commands
@@ -43,5 +45,9 @@
 ## Configuration & Runtime Notes
 
 - The app is a Swing GUI that extracts self-extracting installer packages (`.exe` and `.msi`) into `.zip` files.
+- The executable jar uses `es.jklabs.ExeExtractor` as its main class so Linux desktop identity is configured before
+  Swing initializes; `es.jklabs.Inicio` contains the main UI.
+- Linux dock integration depends on `ExeExtractor.desktop`, `StartupWMClass=ExeExtractor`, the external `app-icon.png`,
+  and the Unix launcher JVM flags.
 - Output ZIP filename is configurable via `src/main/resources/app.properties` key `app.output.zip.name`.
 - Ensure the target runtime has a JRE/JDK 21; Java 8+ may work but is not guaranteed.

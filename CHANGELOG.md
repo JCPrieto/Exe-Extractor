@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.4.0 - 2026-06-17
+
+- Added: icono propio de la aplicacion en PNG/SVG y uso del icono en la ventana principal y el dialogo `Acerca de`.
+- Added: nuevo dialogo `Acerca de` con informacion de autor, enlaces, componentes usados y licencia GPLv3.
+- Added: integracion de escritorio Linux mediante `ExeExtractor.desktop`, `StartupWMClass=ExeExtractor`, icono externo
+  `app-icon.png` y lanzador Unix actualizado para mejorar el nombre/icono en docks compatibles.
+- Added: clase de entrada `es.jklabs.ExeExtractor` para configurar la identidad de escritorio antes de inicializar
+  Swing.
+- Added: mas cobertura unitaria para `Inicio`, incluyendo extraccion de assets de release, validacion de rutas,
+  deteccion de archivos generados y comparacion de versiones.
+- Changed: `jackson-databind` actualizado de `2.21.4` a `2.22.0` y `jacoco-maven-plugin` de `0.8.14` a `0.8.15`.
+- Changed: workflow de release ajustado para fijar `softprops/action-gh-release` a un commit SHA completo.
+- Changed: el `Main-Class` del jar pasa de `es.jklabs.Inicio` a `es.jklabs.ExeExtractor`.
+- Fixed: corregido el nombre visible de la aplicacion de `Exe Extactor` a `Exe Extractor`.
+
 ## 2.3.4 - 2026-06-01
 
 - Changed: `junit-jupiter` actualizado de `6.0.3` a `6.1.0`, `jackson-databind` de `2.21.3` a `2.21.4`

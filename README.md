@@ -17,6 +17,19 @@ la implementé en Java 5.
 
 * Java 21
 
+### Ejecución ###
+
+Después de generar el paquete con `mvn package`, el ZIP de `target/` incluye el jar, las dependencias y los lanzadores.
+En Linux se puede ejecutar desde la carpeta descomprimida con:
+
+```shell
+./Exe\ Extractor.sh
+```
+
+El paquete tambien incluye `ExeExtractor.desktop` y `app-icon.png` para integracion con escritorios Linux. Si se quiere
+que GNOME/Ubuntu Dock asocie correctamente el nombre y el icono de la aplicacion, copia o instala el `.desktop` junto al
+icono en una ubicacion de aplicaciones del usuario y conserva `StartupWMClass=ExeExtractor`.
+
 ### Changelog ###
 
 Consulta el historial de cambios en [`CHANGELOG.md`](CHANGELOG.md).
