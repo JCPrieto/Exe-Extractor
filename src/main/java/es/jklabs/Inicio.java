@@ -13,7 +13,10 @@ import es.jklabs.utilidades.Constantes;
 import es.jklabs.utilidades.Logger;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -386,9 +389,144 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private void showInfoDialog() {
-        JOptionPane.showMessageDialog(this, "<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1>" +
-                Constantes.UI_INFO_AUTHOR + "</html>\n" +
-                Constantes.UI_INFO_WEBSITE, Constantes.UI_DIALOG_INFO_TITLE, JOptionPane.PLAIN_MESSAGE);
+        JDialog dialog = new JDialog(this, Constantes.UI_DIALOG_INFO_TITLE, true);
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.insets = new Insets(10, 10, 10, 10);
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.gridwidth = 3;
+        panel.add(new JLabel("<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1></html>",
+                SwingConstants.CENTER), constraints);
+
+        addAboutAuthor(panel, constraints);
+        addPoweredBy(panel, constraints);
+        addLicense(panel, constraints);
+        addAboutCloseButton(dialog, panel, constraints);
+
+        dialog.add(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private void addAboutAuthor(JPanel panel, GridBagConstraints constraints) {
+        constraints.insets = new Insets(10, 10, 3, 10);
+        constraints.gridx = 0;
+        constraints.gridy = 1;
+        constraints.gridwidth = 1;
+        panel.add(new JLabel(Constantes.UI_INFO_CREATED_BY, SwingConstants.LEFT), constraints);
+
+        constraints.insets = new Insets(3, 10, 3, 10);
+        constraints.gridy = 2;
+        panel.add(new JLabel("<html><b>" + Constantes.UI_INFO_AUTHOR_NAME + "</b></html>", SwingConstants.LEFT),
+                constraints);
+
+        constraints.gridx = 1;
+        panel.add(createLinkLabel(Constantes.UI_INFO_WEBSITE_LABEL, Constantes.UI_INFO_WEBSITE_URL), constraints);
+
+        constraints.gridx = 2;
+        panel.add(createLinkLabel(Constantes.UI_INFO_EMAIL,
+                        "mailto:" + Constantes.UI_INFO_EMAIL + "?subject=" + Constantes.NOMBRE_APP.replace(' ', '_')),
+                constraints);
+    }
+
+    private void addPoweredBy(JPanel panel, GridBagConstraints constraints) {
+        constraints.insets = new Insets(10, 10, 3, 10);
+        constraints.gridx = 0;
+        constraints.gridy = 5;
+        constraints.gridwidth = 1;
+        panel.add(new JLabel(Constantes.UI_INFO_POWERED_BY, SwingConstants.LEFT), constraints);
+        addPowered(panel, constraints, 5 + 1, "Jackson", "https://github.com/FasterXML/jackson");
+        addPowered(panel, constraints, 5 + 2, "Apache Commons Lang",
+                "https://commons.apache.org/proper/commons-lang");
+        addPowered(panel, constraints, 5 + 3, "GitHub Releases",
+                "https://docs.github.com/repositories/releasing-projects-on-github/about-releases");
+        addPowered(panel, constraints, 5 + 4, "Java Swing",
+                "https://docs.oracle.com/javase/tutorial/uiswing/");
+    }
+
+    private void addPowered(JPanel panel, GridBagConstraints constraints, int y, String title, String url) {
+        constraints.insets = new Insets(3, 10, 3, 10);
+        constraints.gridx = 0;
+        constraints.gridy = y;
+        constraints.gridwidth = 1;
+        panel.add(createLinkLabel("<html><b>" + title + "</b></html>", url), constraints);
+
+        constraints.gridx = 1;
+        constraints.gridwidth = 2;
+        panel.add(createLinkLabel(url, url), constraints);
+    }
+
+    private void addLicense(JPanel panel, GridBagConstraints constraints) {
+        JLabel licenseLabel = createLinkLabel(Constantes.UI_INFO_LICENSE, Constantes.UI_INFO_LICENSE_URL);
+        licenseLabel.setIcon(loadIcon());
+        licenseLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        constraints.insets = new Insets(10, 10, 10, 10);
+        constraints.gridx = 0;
+        constraints.gridy = 10;
+        constraints.gridwidth = 3;
+        panel.add(licenseLabel, constraints);
+    }
+
+    private void addAboutCloseButton(JDialog dialog, JPanel panel, GridBagConstraints constraints) {
+        JButton button = new JButton(Constantes.UI_BUTTON_OK);
+        button.addActionListener(evt -> dialog.dispose());
+        constraints.gridy = 11;
+        constraints.gridwidth = 3;
+        panel.add(button, constraints);
+    }
+
+    private JLabel createLinkLabel(String text, String uri) {
+        JLabel label = new JLabel(text, SwingConstants.LEFT);
+        label.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent event) {
+                openExternalUri(uri);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent event) {
+                label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent event) {
+                label.setCursor(null);
+            }
+        });
+        return label;
+    }
+
+    private void openExternalUri(String uri) {
+        try {
+            openUri(uri);
+        } catch (Exception e) {
+            Logger.error("about.open.link", e);
+        }
+    }
+
+    private void openUri(String uri) throws IOException {
+        if (!Desktop.isDesktopSupported()) {
+            showError("No se puede abrir el navegador automaticamente en este sistema.");
+            return;
+        }
+        Desktop desktop = Desktop.getDesktop();
+        if (!desktop.isSupported(Desktop.Action.BROWSE)) {
+            showError("El sistema no soporta apertura de enlaces web.");
+            return;
+        }
+        desktop.browse(URI.create(uri));
+    }
+
+    private ImageIcon loadIcon() {
+        java.net.URL iconUrl = Inicio.class.getClassLoader().getResource("img/icons/gplv3-with-text-136x68.png");
+        if (iconUrl == null) {
+            return null;
+        }
+        return new ImageIcon(iconUrl);
     }
 
     private void checkForUpdates() {
@@ -519,16 +657,7 @@ public class Inicio extends javax.swing.JFrame {
             return;
         }
         try {
-            if (!Desktop.isDesktopSupported()) {
-                showError("No se puede abrir el navegador automaticamente en este sistema.");
-                return;
-            }
-            Desktop desktop = Desktop.getDesktop();
-            if (!desktop.isSupported(Desktop.Action.BROWSE)) {
-                showError("El sistema no soporta apertura de enlaces web.");
-                return;
-            }
-            desktop.browse(URI.create(updateDownloadUrl));
+            openUri(updateDownloadUrl);
         } catch (Exception e) {
             Logger.error("update.open.download", e);
         }

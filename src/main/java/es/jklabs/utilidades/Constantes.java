@@ -30,6 +30,15 @@ public class Constantes {
     public static final String UI_DIALOG_ERROR_TITLE = cargarPropiedad("app.ui.dialog.error.title", "Error");
     public static final String UI_INFO_AUTHOR = cargarPropiedad("app.ui.info.author", "Creado por: <b>Juan Carlos Prieto Silos</b>");
     public static final String UI_INFO_WEBSITE = cargarPropiedad("app.ui.info.website", "Web Site: JCPrieto.es");
+    public static final String UI_INFO_CREATED_BY = cargarPropiedad("app.ui.info.created.by", "Creado por");
+    public static final String UI_INFO_AUTHOR_NAME = cargarPropiedad("app.ui.info.author.name", "Juan Carlos Prieto Silos");
+    public static final String UI_INFO_WEBSITE_LABEL = cargarPropiedad("app.ui.info.website.label", "JCPrieto.es");
+    public static final String UI_INFO_WEBSITE_URL = cargarPropiedad("app.ui.info.website.url", "https://www.jcprieto.es");
+    public static final String UI_INFO_EMAIL = cargarPropiedad("app.ui.info.email", "JuanC.Prieto.Silos@gmail.com");
+    public static final String UI_INFO_POWERED_BY = cargarPropiedad("app.ui.info.powered.by", "Powered by");
+    public static final String UI_INFO_LICENSE = cargarPropiedad("app.ui.info.license", "Licencia GPLv3");
+    public static final String UI_INFO_LICENSE_URL = cargarPropiedad("app.ui.info.license.url", "https://www.gnu.org/licenses/gpl-3.0.html");
+    public static final String UI_BUTTON_OK = cargarPropiedad("app.ui.button.ok", "Aceptar");
 
     private Constantes() {
 
