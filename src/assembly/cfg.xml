@@ -15,6 +15,16 @@
                 <include>NOTICE*</include>
                 <include>*.bat</include>
                 <include>*.sh</include>
+                <include>*.desktop</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>
+                ${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}img${file.separator}icons
+            </directory>
+            <outputDirectory>${file.separator}</outputDirectory>
+            <includes>
+                <include>app-icon.png</include>
             </includes>
         </fileSet>
         <fileSet>

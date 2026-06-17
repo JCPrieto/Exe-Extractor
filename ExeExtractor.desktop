@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Exe Extractor
+Comment=Extract self-extracting installer packages into ZIP files
+Exec=sh -c 'cd "$(dirname "$0")" && ./Exe\ Extractor.sh' %k
+Icon=app-icon
+Terminal=false
+Categories=Utility;Archiving;
+StartupNotify=true
+StartupWMClass=ExeExtractor

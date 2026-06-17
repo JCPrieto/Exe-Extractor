@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+    <defs>
+        <linearGradient id="bg" x1="142" x2="882" y1="120" y2="904" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#0f5f8f"/>
+            <stop offset="1" stop-color="#0a3558"/>
+        </linearGradient>
+        <linearGradient id="accent" x1="360" x2="684" y1="382" y2="596" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#ffb230"/>
+            <stop offset="1" stop-color="#f27a1a"/>
+        </linearGradient>
+    </defs>
+    <rect width="1024" height="1024" rx="210" fill="url(#bg)"/>
+    <path d="M407 404h178v-60c0-22 27-33 43-17l164 164c12 12 12 31 0 43L628 698c-16 16-43 5-43-17v-64H407c-23 0-42-19-42-42V446c0-23 19-42 42-42z"
+          fill="url(#accent)"/>
+    <g>
+        <path d="M188 230h246l112 112v362c0 44-36 80-80 80H188c-44 0-80-36-80-80V310c0-44 36-80 80-80z" fill="#f7fbff"/>
+        <path d="M434 230v82c0 17 13 30 30 30h82z" fill="#c8d8e6"/>
+        <rect x="156" y="536" width="342" height="118" rx="28" fill="#15354d"/>
+        <text x="327" y="612" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800"
+              text-anchor="middle">EXE
+        </text>
+    </g>
+    <g>
+        <path d="M612 274h230c41 0 74 33 74 74v390c0 41-33 74-74 74H612c-41 0-74-33-74-74V348c0-41 33-74 74-74z"
+              fill="#ffffff"/>
+        <path d="M678 274h70v74h-70zM748 348h70v74h-70zM678 422h70v74h-70zM748 496h70v74h-70zM678 570h70v74h-70zM748 644h70v74h-70z"
+              fill="#23384a"/>
+        <rect x="588" y="704" width="278" height="72" rx="24" fill="#15354d"/>
+        <text x="727" y="757" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="800"
+              text-anchor="middle">ZIP
+        </text>
+    </g>
+    <g fill="#ffd166">
+        <path d="M840 186l18 38 40 6-29 28 7 40-36-19-36 19 7-40-29-28 40-6z"/>
+        <circle cx="230" cy="836" r="16"/>
+        <circle cx="802" cy="850" r="13"/>
+    </g>
+</svg>

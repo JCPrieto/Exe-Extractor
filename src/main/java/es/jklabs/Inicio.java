@@ -43,6 +43,10 @@ public class Inicio extends javax.swing.JFrame {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
     private static final Duration UPDATE_CONNECT_TIMEOUT = Duration.ofSeconds(5);
     private static final Duration UPDATE_REQUEST_TIMEOUT = Duration.ofSeconds(10);
+    private static final String APP_ICON_PATH = "img/icons/app-icon.png";
+    private static final String GPL_ICON_PATH = "img/icons/gplv3-with-text-136x68.png";
+    private static final String UPDATE_ICON_PATH = "img/icons/update.png";
+    private static final int ABOUT_ICON_SIZE = 64;
     
     private String rutaArchivo;
     private String rutaSave= "";
@@ -61,6 +65,10 @@ public class Inicio extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        ExeExtractor.main(args);
+    }
+
+    static void launch() {
         Logger.eliminarLogsVacios();
         Logger.init();
         try {
@@ -301,6 +309,7 @@ public class Inicio extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(Constantes.NOMBRE_APP);
+        configureApplicationIcon();
         menuAcercaDe.addActionListener(evt -> showInfoDialog());
         menuAyuda.add(menuAcercaDe);
         menuBar.add(menuAyuda);
@@ -390,6 +399,11 @@ public class Inicio extends javax.swing.JFrame {
 
     private void showInfoDialog() {
         JDialog dialog = new JDialog(this, Constantes.UI_DIALOG_INFO_TITLE, true);
+        ImageIcon appIcon = loadResourceIcon(APP_ICON_PATH);
+        ImageIcon aboutIcon = loadScaledResourceIcon();
+        if (appIcon != null) {
+            dialog.setIconImage(appIcon.getImage());
+        }
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         GridBagConstraints constraints = new GridBagConstraints();
@@ -399,7 +413,7 @@ public class Inicio extends javax.swing.JFrame {
         constraints.gridy = 0;
         constraints.gridwidth = 3;
         panel.add(new JLabel("<html><h1>" + Constantes.NOMBRE_APP + " " + Constantes.VERSION + "</h1></html>",
-                SwingConstants.CENTER), constraints);
+                aboutIcon, SwingConstants.CENTER), constraints);
 
         addAboutAuthor(panel, constraints);
         addPoweredBy(panel, constraints);
@@ -462,7 +476,7 @@ public class Inicio extends javax.swing.JFrame {
 
     private void addLicense(JPanel panel, GridBagConstraints constraints) {
         JLabel licenseLabel = createLinkLabel(Constantes.UI_INFO_LICENSE, Constantes.UI_INFO_LICENSE_URL);
-        licenseLabel.setIcon(loadIcon());
+        licenseLabel.setIcon(loadResourceIcon(GPL_ICON_PATH));
         licenseLabel.setHorizontalAlignment(SwingConstants.CENTER);
         constraints.insets = new Insets(10, 10, 10, 10);
         constraints.gridx = 0;
@@ -521,12 +535,37 @@ public class Inicio extends javax.swing.JFrame {
         desktop.browse(URI.create(uri));
     }
 
-    private ImageIcon loadIcon() {
-        java.net.URL iconUrl = Inicio.class.getClassLoader().getResource("img/icons/gplv3-with-text-136x68.png");
+    private void configureApplicationIcon() {
+        ImageIcon appIcon = loadResourceIcon(APP_ICON_PATH);
+        if (appIcon == null) {
+            return;
+        }
+        Image image = appIcon.getImage();
+        setIconImage(image);
+        try {
+            if (Taskbar.isTaskbarSupported()) {
+                Taskbar.getTaskbar().setIconImage(image);
+            }
+        } catch (UnsupportedOperationException | SecurityException e) {
+            Logger.error("app.icon.taskbar", e);
+        }
+    }
+
+    private ImageIcon loadResourceIcon(String resourcePath) {
+        java.net.URL iconUrl = Inicio.class.getClassLoader().getResource(resourcePath);
         if (iconUrl == null) {
             return null;
         }
         return new ImageIcon(iconUrl);
+    }
+
+    private ImageIcon loadScaledResourceIcon() {
+        ImageIcon icon = loadResourceIcon(Inicio.APP_ICON_PATH);
+        if (icon == null) {
+            return null;
+        }
+        Image scaledImage = icon.getImage().getScaledInstance(Inicio.ABOUT_ICON_SIZE, Inicio.ABOUT_ICON_SIZE, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaledImage);
     }
 
     private void checkForUpdates() {
@@ -568,11 +607,7 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private ImageIcon loadUpdateIcon() {
-        java.net.URL iconUrl = Inicio.class.getClassLoader().getResource("img/icons/update.png");
-        if (iconUrl == null) {
-            return null;
-        }
-        return new ImageIcon(iconUrl);
+        return loadResourceIcon(UPDATE_ICON_PATH);
     }
 
     private String extractJsonValue(String json) {

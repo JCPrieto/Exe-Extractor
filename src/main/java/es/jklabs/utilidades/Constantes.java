@@ -7,7 +7,7 @@ import java.util.Properties;
 public class Constantes {
     private static final Properties APP_PROPERTIES = cargarPropiedades();
 
-    public static final String NOMBRE_APP = "Exe Extactor";
+    public static final String NOMBRE_APP = "Exe Extractor";
     public static final String VERSION = cargarVersion();
     public static final String GITHUB_REPO = cargarPropiedad("app.github.repo", "");
     public static final String GITHUB_ASSET_PATTERN = cargarPropiedad("app.github.asset.pattern", "ExeExtractor-{version}.zip");

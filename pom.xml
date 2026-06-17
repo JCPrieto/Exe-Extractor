@@ -80,7 +80,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
                             <mainClass>
-                                es.jklabs.Inicio
+                                es.jklabs.ExeExtractor
                             </mainClass>
                         </manifest>
                     </archive>

@@ -18,7 +18,7 @@ class ConstantesTest {
 
     @Test
     void constantsAreLoadedFromConfiguration() {
-        assertEquals("Exe Extactor", Constantes.NOMBRE_APP);
+        assertEquals("Exe Extractor", Constantes.NOMBRE_APP);
 
         assertNotNull(Constantes.VERSION);
         assertFalse(Constantes.VERSION.isBlank());
