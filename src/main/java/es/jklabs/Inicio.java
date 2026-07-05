@@ -178,11 +178,15 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private boolean validarRutasSilencioso() {
-        return validarArchivo(rutaArchivo, false) && validarDirectorio(rutaSave, false);
+        return validarRutas(false);
     }
 
     private boolean validarRutas() {
-        return validarArchivo(rutaArchivo, true) && validarDirectorio(rutaSave, true);
+        return validarRutas(true);
+    }
+
+    private boolean validarRutas(boolean mostrarError) {
+        return validarArchivo(rutaArchivo, mostrarError) && validarDirectorio(rutaSave, mostrarError);
     }
 
     private boolean validarArchivo(String ruta, boolean mostrarError) {

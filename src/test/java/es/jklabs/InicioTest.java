@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -123,6 +124,17 @@ class InicioTest {
     }
 
     @Test
+    void buildAssetNameHandlesMissingPattern() {
+        Inicio inicio = newInstanceWithoutConstructor();
+        assertNull(invoke(inicio, "buildAssetName",
+                new Class<?>[]{String.class, String.class}, "v1.2", null));
+        assertNull(invoke(inicio, "buildAssetName",
+                new Class<?>[]{String.class, String.class}, "v1.2", ""));
+        assertEquals("app-1.2.zip", invoke(inicio, "buildAssetName",
+                new Class<?>[]{String.class, String.class}, "v1.2", "app-{version}.zip"));
+    }
+
+    @Test
     void extractAssetUrlPrefersNamedAssetThenZipFallback() {
         Inicio inicio = newInstanceWithoutConstructor();
         String desiredAssetName = Constantes.GITHUB_ASSET_PATTERN;
@@ -146,7 +158,7 @@ class InicioTest {
     void extractAssetUrlHandlesMissingAssetsAndInvalidDownloads() {
         Inicio inicio = newInstanceWithoutConstructor();
         assertNull(invoke(inicio, "extractAssetUrl",
-                new Class<?>[]{String.class, String.class}, (Object) null, "1.0"));
+                new Class<?>[]{String.class, String.class}, null, "1.0"));
         assertNull(invoke(inicio, "extractAssetUrl",
                 new Class<?>[]{String.class, String.class}, "{\"name\":\"release\"}", "1.0"));
         assertNull(invoke(inicio, "extractAssetUrl",
@@ -180,8 +192,27 @@ class InicioTest {
 
         assertNull(invoke(inicio, "getNamedAssetUrl",
                 new Class<?>[]{JsonNode.class, String.class}, assets, ""));
+        assertNull(invoke(inicio, "getNamedAssetUrl",
+                new Class<?>[]{JsonNode.class, String.class}, assets, null));
         assertFalse((boolean) invoke(inicio, "isNamedAsset",
                 new Class<?>[]{JsonNode.class, String.class}, assets.get(0), "app.zip"));
+    }
+
+    @Test
+    void resourceIconHelperIgnoresMissingResources() {
+        Inicio inicio = newInstanceWithoutConstructor();
+
+        assertNull(invoke(inicio, "loadResourceIcon",
+                new Class<?>[]{String.class}, "img/icons/missing.png"));
+    }
+
+    @Test
+    void openUpdateDownloadDoesNothingWithoutDownloadUrl() {
+        Inicio inicio = newInstanceWithoutConstructor();
+
+        invoke(inicio, "openUpdateDownload", new Class<?>[]{});
+        setField(inicio, "updateDownloadUrl", "");
+        invoke(inicio, "openUpdateDownload", new Class<?>[]{});
     }
 
     @Test
@@ -210,6 +241,23 @@ class InicioTest {
     }
 
     @Test
+    void validatorsShowErrorsWhenRequestedForInvalidPaths(@TempDir Path tempDir) throws IOException {
+        System.setProperty("java.awt.headless", "true");
+        Inicio inicio = newInstanceWithoutConstructor();
+        Path directory = Files.createDirectory(tempDir.resolve("output"));
+        Path file = Files.createFile(tempDir.resolve("installer.exe"));
+
+        assertThrows(RuntimeException.class, () -> invoke(inicio, "validarArchivo",
+                new Class<?>[]{String.class, boolean.class}, null, true));
+        assertThrows(RuntimeException.class, () -> invoke(inicio, "validarArchivo",
+                new Class<?>[]{String.class, boolean.class}, directory.toString(), true));
+        assertThrows(RuntimeException.class, () -> invoke(inicio, "validarDirectorio",
+                new Class<?>[]{String.class, boolean.class}, null, true));
+        assertThrows(RuntimeException.class, () -> invoke(inicio, "validarDirectorio",
+                new Class<?>[]{String.class, boolean.class}, file.toString(), true));
+    }
+
+    @Test
     void routeValidatorsCombineFileAndDirectoryChecks(@TempDir Path tempDir) throws IOException {
         Inicio inicio = newInstanceWithoutConstructor();
         Path file = Files.createFile(tempDir.resolve("installer.exe"));
@@ -222,6 +270,20 @@ class InicioTest {
 
         setField(inicio, "rutaSave", tempDir.resolve("missing").toString());
         assertFalse((boolean) invoke(inicio, "validarRutasSilencioso", new Class<?>[]{}));
+        System.setProperty("java.awt.headless", "true");
+        assertThrows(RuntimeException.class, () -> invoke(inicio, "validarRutas", new Class<?>[]{}));
+    }
+
+    @Test
+    void routeValidatorsShortCircuitWhenSourceFileIsInvalid(@TempDir Path tempDir) throws IOException {
+        System.setProperty("java.awt.headless", "true");
+        Inicio inicio = newInstanceWithoutConstructor();
+        Path directory = Files.createDirectory(tempDir.resolve("output"));
+        setField(inicio, "rutaArchivo", tempDir.resolve("missing.exe").toString());
+        setField(inicio, "rutaSave", directory.toString());
+
+        assertFalse((boolean) invoke(inicio, "validarRutasSilencioso", new Class<?>[]{}));
+        assertThrows(RuntimeException.class, () -> invoke(inicio, "validarRutas", new Class<?>[]{}));
     }
 
     @Test
@@ -242,6 +304,22 @@ class InicioTest {
     void normalizeZipNameUsesConfiguredValue() {
         Inicio inicio = newInstanceWithoutConstructor();
         assertEquals("Exe.zip", invoke(inicio, "normalizeZipName", new Class<?>[]{}));
+    }
+
+    @Test
+    void normalizeZipNameHandlesAlternativeConfiguredValues() {
+        Inicio inicio = newInstanceWithoutConstructor();
+
+        assertEquals("Exe.zip", invoke(inicio, "normalizeZipName",
+                new Class<?>[]{String.class}, (Object) null));
+        assertEquals("Exe.zip", invoke(inicio, "normalizeZipName",
+                new Class<?>[]{String.class}, "  "));
+        assertEquals("Exe.zip", invoke(inicio, "normalizeZipName",
+                new Class<?>[]{String.class}, "/"));
+        assertEquals("Custom.zip", invoke(inicio, "normalizeZipName",
+                new Class<?>[]{String.class}, "Custom"));
+        assertEquals("Custom.ZIP", invoke(inicio, "normalizeZipName",
+                new Class<?>[]{String.class}, "/tmp/Custom.ZIP"));
     }
 
     @Test
@@ -292,6 +370,21 @@ class InicioTest {
                 new Class<?>[]{File.class, File[].class}, tempDir.toFile(), new File[]{existing.toFile()});
 
         assertEquals("newest.dat", detected.getName());
+    }
+
+    @Test
+    void detectarArchivoGeneradoKeepsFirstNewFileWhenTimestampsAreEqual(@TempDir Path tempDir) throws IOException {
+        Inicio inicio = newInstanceWithoutConstructor();
+        Path first = Files.createFile(tempDir.resolve("first.dat"));
+        Path second = Files.createFile(tempDir.resolve("second.dat"));
+        FileTime sameTimestamp = FileTime.fromMillis(1_000);
+        Files.setLastModifiedTime(first, sameTimestamp);
+        Files.setLastModifiedTime(second, sameTimestamp);
+
+        File detected = (File) invoke(inicio, "detectarArchivoGenerado",
+                new Class<?>[]{File.class, File[].class}, tempDir.toFile(), new File[0]);
+
+        assertTrue(Set.of("first.dat", "second.dat").contains(detected.getName()));
     }
 
     @Test
