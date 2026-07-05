@@ -48,6 +48,6 @@
 - The executable jar uses `es.jklabs.ExeExtractor` as its main class so Linux desktop identity is configured before
   Swing initializes; `es.jklabs.Inicio` contains the main UI.
 - Linux dock integration depends on `ExeExtractor.desktop`, `StartupWMClass=ExeExtractor`, the external `app-icon.png`,
-  and the Unix launcher JVM flags.
+  and the desktop identity properties configured by `es.jklabs.ExeExtractor` and the Unix launcher.
 - Output ZIP filename is configurable via `src/main/resources/app.properties` key `app.output.zip.name`.
 - Ensure the target runtime has a JRE/JDK 21; Java 8+ may work but is not guaranteed.

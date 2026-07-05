@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.4.1 - 2026-07-05
+
+- Fixed: eliminada la configuracion reflectiva de `sun.awt.X11.XToolkit` para evitar accesos a campos privados
+  marcados por SonarQube y reducir la dependencia de APIs internas de AWT.
+- Changed: el lanzador Unix ya no requiere `--add-opens java.desktop/sun.awt.X11=ALL-UNNAMED`; mantiene la identidad
+  de escritorio mediante propiedades de aplicacion y `StartupWMClass`.
+- Changed: `junit-jupiter` actualizado de `6.1.0` a `6.1.1`.
+- Added: ampliada la cobertura unitaria de `Inicio`, incluyendo validacion de rutas, assets de actualizacion,
+  recursos inexistentes, descarga sin URL y deteccion de archivos generados.
+
 ## 2.4.0 - 2026-06-17
 
 - Added: icono propio de la aplicacion en PNG/SVG y uso del icono en la ventana principal y el dialogo `Acerca de`.
