@@ -178,11 +178,15 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private boolean validarRutasSilencioso() {
-        return validarArchivo(rutaArchivo, false) && validarDirectorio(rutaSave, false);
+        return validarRutas(false);
     }
 
     private boolean validarRutas() {
-        return validarArchivo(rutaArchivo, true) && validarDirectorio(rutaSave, true);
+        return validarRutas(true);
+    }
+
+    private boolean validarRutas(boolean mostrarError) {
+        return validarArchivo(rutaArchivo, mostrarError) && validarDirectorio(rutaSave, mostrarError);
     }
 
     private boolean validarArchivo(String ruta, boolean mostrarError) {
@@ -273,10 +277,14 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private String normalizeZipName() {
-        if (Constantes.OUTPUT_ZIP_NAME == null || Constantes.OUTPUT_ZIP_NAME.isBlank()) {
+        return normalizeZipName(Constantes.OUTPUT_ZIP_NAME);
+    }
+
+    private String normalizeZipName(String outputZipName) {
+        if (outputZipName == null || outputZipName.isBlank()) {
             return "Exe.zip";
         }
-        String filename = new File(Constantes.OUTPUT_ZIP_NAME.trim()).getName();
+        String filename = new File(outputZipName.trim()).getName();
         if (filename.isBlank()) {
             return "Exe.zip";
         }
@@ -699,11 +707,15 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private String buildAssetName(String latestVersion) {
-        if (Constantes.GITHUB_ASSET_PATTERN == null || Constantes.GITHUB_ASSET_PATTERN.isEmpty()) {
+        return buildAssetName(latestVersion, Constantes.GITHUB_ASSET_PATTERN);
+    }
+
+    private String buildAssetName(String latestVersion, String assetPattern) {
+        if (assetPattern == null || assetPattern.isEmpty()) {
             return null;
         }
         String normalizedVersion = normalizeVersion(latestVersion);
-        return Constantes.GITHUB_ASSET_PATTERN.replace("{version}", normalizedVersion);
+        return assetPattern.replace("{version}", normalizedVersion);
     }
 
     private boolean isNewerVersion(String latestVersion) {
