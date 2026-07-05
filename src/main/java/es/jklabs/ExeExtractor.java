@@ -29,7 +29,7 @@ public class ExeExtractor {
         }
         try {
             Toolkit toolkit = Toolkit.getDefaultToolkit();
-            if (!"sun.awt.X11.XToolkit".equals(toolkit.getClass().getName())) {
+            if (!(toolkit instanceof sun.awt.X11.XToolkit)) {
                 return;
             }
             Class<?> xToolkitClass = Class.forName("sun.awt.X11.XToolkit");
