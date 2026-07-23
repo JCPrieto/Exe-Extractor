@@ -256,15 +256,18 @@ class InicioTest {
         Inicio inicio = newInstanceWithoutConstructor();
         Path directory = Files.createDirectory(tempDir.resolve("output"));
         Path file = Files.createFile(tempDir.resolve("installer.exe"));
+        String directoryPath = directory.toString();
+        String filePath = file.toString();
+        Class<?>[] validatorParameterTypes = {String.class, boolean.class};
 
         assertThrows(RuntimeException.class, () -> invoke(inicio, "validarArchivo",
-                new Class<?>[]{String.class, boolean.class}, null, true));
+                validatorParameterTypes, null, true));
         assertThrows(RuntimeException.class, () -> invoke(inicio, "validarArchivo",
-                new Class<?>[]{String.class, boolean.class}, directory.toString(), true));
+                validatorParameterTypes, directoryPath, true));
         assertThrows(RuntimeException.class, () -> invoke(inicio, "validarDirectorio",
-                new Class<?>[]{String.class, boolean.class}, null, true));
+                validatorParameterTypes, null, true));
         assertThrows(RuntimeException.class, () -> invoke(inicio, "validarDirectorio",
-                new Class<?>[]{String.class, boolean.class}, file.toString(), true));
+                validatorParameterTypes, filePath, true));
     }
 
     @Test
