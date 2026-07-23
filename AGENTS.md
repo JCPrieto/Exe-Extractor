@@ -31,6 +31,8 @@
 - Each time we create a new class or a new public method, add its corresponding unit test.
 - When modifying a method, review existing tests and update them if behavior changes.
 - Use `mvn test` for a quick validation and `mvn verify` when you also need the JaCoCo coverage artifacts.
+- `InicioTest` runs AWT in headless mode; validate Swing rendering and `Desktop`/`Taskbar` integration manually in a
+  graphical environment when those areas change.
 
 ## Commit & Pull Request Guidelines
 
