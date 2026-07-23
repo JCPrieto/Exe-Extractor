@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.4.2 - 2026-07-23
+
+- Fixed: la fecha del archivo de log se calcula explicitamente en UTC para evitar resultados dependientes de la zona
+  horaria predeterminada del sistema.
+- Changed: `jackson-databind` actualizado de `2.22.0` a `2.22.1` y `junit-jupiter` de `6.1.1` a `6.1.2`.
+- Changed: eliminado el constructor explicito vacio de `ExeFilter`; Java conserva el mismo constructor publico
+  predeterminado y no cambia el comportamiento del filtro.
+- Added: ampliada la cobertura unitaria de `Inicio` para recursos graficos y URLs de actualizacion, con AWT configurado
+  en modo headless antes de ejecutar los tests.
+- Changed: simplificadas las lambdas de validacion de excepciones en `InicioTest` para que cada una contenga una sola
+  invocacion susceptible de lanzar la excepcion esperada.
+
 ## 2.4.1 - 2026-07-05
 
 - Fixed: eliminada la configuracion reflectiva de `sun.awt.X11.XToolkit` para evitar accesos a campos privados

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -18,7 +19,7 @@ import java.util.logging.SimpleFormatter;
 public class Logger {
 
     private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(Logger.class.getName());
-    private static final String ARCHIVO = "log_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
+    private static final String ARCHIVO = "log_" + LocalDate.now(Clock.systemUTC()).format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".log";
     private static Logger logger;
 
     private Logger() {
