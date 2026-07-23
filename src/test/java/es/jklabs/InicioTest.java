@@ -2,10 +2,12 @@ package es.jklabs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import es.jklabs.utilidades.Constantes;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import sun.misc.Unsafe;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -18,6 +20,11 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InicioTest {
+
+    @BeforeAll
+    static void enableHeadlessMode() {
+        System.setProperty("java.awt.headless", "true");
+    }
 
     private static Inicio newInstanceWithoutConstructor() {
         try {
@@ -199,20 +206,24 @@ class InicioTest {
     }
 
     @Test
-    void resourceIconHelperIgnoresMissingResources() {
+    void resourceIconHelperLoadsExistingResourcesAndIgnoresMissingOnes() {
         Inicio inicio = newInstanceWithoutConstructor();
 
         assertNull(invoke(inicio, "loadResourceIcon",
                 new Class<?>[]{String.class}, "img/icons/missing.png"));
+        assertInstanceOf(ImageIcon.class, invoke(inicio, "loadResourceIcon",
+                new Class<?>[]{String.class}, "img/icons/app-icon.png"));
     }
 
     @Test
-    void openUpdateDownloadDoesNothingWithoutDownloadUrl() {
+    void openUpdateDownloadHandlesMissingAndConfiguredUrls() {
         Inicio inicio = newInstanceWithoutConstructor();
 
         invoke(inicio, "openUpdateDownload", new Class<?>[]{});
         setField(inicio, "updateDownloadUrl", "");
         invoke(inicio, "openUpdateDownload", new Class<?>[]{});
+        setField(inicio, "updateDownloadUrl", "https://example.com/update.zip");
+        assertDoesNotThrow(() -> invoke(inicio, "openUpdateDownload", new Class<?>[]{}));
     }
 
     @Test
@@ -242,7 +253,6 @@ class InicioTest {
 
     @Test
     void validatorsShowErrorsWhenRequestedForInvalidPaths(@TempDir Path tempDir) throws IOException {
-        System.setProperty("java.awt.headless", "true");
         Inicio inicio = newInstanceWithoutConstructor();
         Path directory = Files.createDirectory(tempDir.resolve("output"));
         Path file = Files.createFile(tempDir.resolve("installer.exe"));
@@ -270,13 +280,11 @@ class InicioTest {
 
         setField(inicio, "rutaSave", tempDir.resolve("missing").toString());
         assertFalse((boolean) invoke(inicio, "validarRutasSilencioso", new Class<?>[]{}));
-        System.setProperty("java.awt.headless", "true");
         assertThrows(RuntimeException.class, () -> invoke(inicio, "validarRutas", new Class<?>[]{}));
     }
 
     @Test
     void routeValidatorsShortCircuitWhenSourceFileIsInvalid(@TempDir Path tempDir) throws IOException {
-        System.setProperty("java.awt.headless", "true");
         Inicio inicio = newInstanceWithoutConstructor();
         Path directory = Files.createDirectory(tempDir.resolve("output"));
         setField(inicio, "rutaArchivo", tempDir.resolve("missing.exe").toString());
