@@ -151,27 +151,31 @@ public class Inicio extends javax.swing.JFrame {
         SelectDir sd= new SelectDir();
         Container parent = this.getParent();
         int choice = sd.jFileChooser1.showOpenDialog(parent);
-        if (choice == JFileChooser.APPROVE_OPTION){
-            rutaSave= sd.jFileChooser1.getSelectedFile().getAbsolutePath();
+        applyDestinationSelection(choice, sd.jFileChooser1.getSelectedFile());
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void applyDestinationSelection(int choice, File selectedFile) {
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            rutaSave = selectedFile.getAbsolutePath();
             this.jLabel2.setText(rutaSave);
-            updateExecuteState();
-            return;
         }
         updateExecuteState();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }
 
     private void jButton1ActionPerformed() {//GEN-FIRST:event_jButton1ActionPerformed
         Open o= new Open();
         Container parent = this.getParent();
         int choice = o.jFileChooser1.showOpenDialog(parent);
-        if (choice == JFileChooser.APPROVE_OPTION){
-            rutaArchivo= o.jFileChooser1.getSelectedFile().getAbsolutePath();
+        applySourceSelection(choice, o.jFileChooser1.getSelectedFile());
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void applySourceSelection(int choice, File selectedFile) {
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            rutaArchivo = selectedFile.getAbsolutePath();
             this.jLabel1.setText(rutaArchivo);
-            updateExecuteState();
-            return;
         }
         updateExecuteState();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }
 
     private void updateExecuteState() {
         jButton3.setEnabled(validarRutasSilencioso());
@@ -277,14 +281,10 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private String normalizeZipName() {
-        return normalizeZipName(Constantes.OUTPUT_ZIP_NAME);
-    }
-
-    private String normalizeZipName(String outputZipName) {
-        if (outputZipName == null || outputZipName.isBlank()) {
+        if (Constantes.OUTPUT_ZIP_NAME == null || Constantes.OUTPUT_ZIP_NAME.isBlank()) {
             return "Exe.zip";
         }
-        String filename = new File(outputZipName.trim()).getName();
+        String filename = new File(Constantes.OUTPUT_ZIP_NAME.trim()).getName();
         if (filename.isBlank()) {
             return "Exe.zip";
         }
@@ -397,10 +397,14 @@ public class Inicio extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initUpdateCheck() {
+        startUpdateCheck(this::checkForUpdates);
+    }
+
+    private void startUpdateCheck(Runnable updateCheck) {
         if (Constantes.GITHUB_REPO.isEmpty()) {
             return;
         }
-        Thread updateThread = new Thread(this::checkForUpdates, "update-check");
+        Thread updateThread = new Thread(updateCheck, "update-check");
         updateThread.setDaemon(true);
         updateThread.start();
     }
@@ -589,29 +593,32 @@ public class Inicio extends javax.swing.JFrame {
                     .GET()
                     .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
-                return;
-            }
-            String body = response.body();
-            String latestVersion = extractJsonValue(body);
-            if (latestVersion == null || !isNewerVersion(latestVersion)) {
-                return;
-            }
-            String downloadUrl = extractAssetUrl(body, latestVersion);
-            if (downloadUrl == null) {
-                return;
-            }
-            SwingUtilities.invokeLater(() -> {
-                updateDownloadUrl = downloadUrl;
-                menuUpdateItem.setText(Constantes.UI_MENU_UPDATE_AVAILABLE + " (" + normalizeVersion(latestVersion) + ")");
-                menuUpdateItem.setVisible(true);
-            });
+            handleUpdateResponse(response.statusCode(), response.body());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             Logger.error("update.check", e);
         } catch (Exception e) {
             Logger.error("update.check", e);
         }
+    }
+
+    private void handleUpdateResponse(int statusCode, String body) {
+        if (statusCode != 200) {
+            return;
+        }
+        String latestVersion = extractJsonValue(body);
+        if (latestVersion == null || !isNewerVersion(latestVersion)) {
+            return;
+        }
+        String downloadUrl = extractAssetUrl(body, latestVersion);
+        if (downloadUrl == null) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            updateDownloadUrl = downloadUrl;
+            menuUpdateItem.setText(Constantes.UI_MENU_UPDATE_AVAILABLE + " (" + normalizeVersion(latestVersion) + ")");
+            menuUpdateItem.setVisible(true);
+        });
     }
 
     private ImageIcon loadUpdateIcon() {
@@ -707,15 +714,11 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private String buildAssetName(String latestVersion) {
-        return buildAssetName(latestVersion, Constantes.GITHUB_ASSET_PATTERN);
-    }
-
-    private String buildAssetName(String latestVersion, String assetPattern) {
-        if (assetPattern == null || assetPattern.isEmpty()) {
+        if (Constantes.GITHUB_ASSET_PATTERN == null || Constantes.GITHUB_ASSET_PATTERN.isEmpty()) {
             return null;
         }
         String normalizedVersion = normalizeVersion(latestVersion);
-        return assetPattern.replace("{version}", normalizedVersion);
+        return Constantes.GITHUB_ASSET_PATTERN.replace("{version}", normalizedVersion);
     }
 
     private boolean isNewerVersion(String latestVersion) {

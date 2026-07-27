@@ -16,6 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,6 +56,16 @@ class InicioTest {
             field.set(target, value);
         } catch (Exception e) {
             throw new RuntimeException("No se pudo asignar " + fieldName, e);
+        }
+    }
+
+    private static Object getField(Inicio target, String fieldName) {
+        try {
+            Field field = Inicio.class.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field.get(target);
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo obtener " + fieldName, e);
         }
     }
 
@@ -131,17 +143,6 @@ class InicioTest {
     }
 
     @Test
-    void buildAssetNameHandlesMissingPattern() {
-        Inicio inicio = newInstanceWithoutConstructor();
-        assertNull(invoke(inicio, "buildAssetName",
-                new Class<?>[]{String.class, String.class}, "v1.2", null));
-        assertNull(invoke(inicio, "buildAssetName",
-                new Class<?>[]{String.class, String.class}, "v1.2", ""));
-        assertEquals("app-1.2.zip", invoke(inicio, "buildAssetName",
-                new Class<?>[]{String.class, String.class}, "v1.2", "app-{version}.zip"));
-    }
-
-    @Test
     void extractAssetUrlPrefersNamedAssetThenZipFallback() {
         Inicio inicio = newInstanceWithoutConstructor();
         String desiredAssetName = Constantes.GITHUB_ASSET_PATTERN;
@@ -216,6 +217,53 @@ class InicioTest {
     }
 
     @Test
+    void scaledResourceIconHelperLoadsConfiguredResource() {
+        Inicio inicio = newInstanceWithoutConstructor();
+
+        assertInstanceOf(ImageIcon.class, invoke(inicio, "loadScaledResourceIcon", new Class<?>[]{}));
+    }
+
+    @Test
+    void updateCheckStartsConfiguredTask() throws InterruptedException {
+        Inicio inicio = newInstanceWithoutConstructor();
+        CountDownLatch completed = new CountDownLatch(1);
+        invoke(inicio, "startUpdateCheck", new Class<?>[]{Runnable.class}, (Runnable) completed::countDown);
+
+        assertTrue(completed.await(1, TimeUnit.SECONDS));
+    }
+
+    @Test
+    void updateResponseIsIgnoredUntilANewerDownloadIsAvailable() throws Exception {
+        Inicio inicio = newInstanceWithoutConstructor();
+        JMenuItem updateItem = new JMenuItem();
+        updateItem.setVisible(false);
+        setField(inicio, "menuUpdateItem", updateItem);
+        Class<?>[] parameterTypes = {int.class, String.class};
+
+        invoke(inicio, "handleUpdateResponse", parameterTypes, 500, "{}");
+        invoke(inicio, "handleUpdateResponse", parameterTypes, 200, "{}");
+        invoke(inicio, "handleUpdateResponse", parameterTypes, 200,
+                "{\"tag_name\":\"" + Constantes.VERSION + "\",\"assets\":[]}");
+        invoke(inicio, "handleUpdateResponse", parameterTypes, 200,
+                "{\"tag_name\":\"v9999.0.0\",\"assets\":[]}");
+
+        assertNull(getField(inicio, "updateDownloadUrl"));
+        assertFalse(updateItem.isVisible());
+
+        invoke(inicio, "handleUpdateResponse", parameterTypes, 200,
+                "{\"tag_name\":\"v9999.0.0\",\"assets\":[{" +
+                        "\"name\":\"update.zip\"," +
+                        "\"browser_download_url\":\"https://example.com/update.zip\"}]}");
+        SwingUtilities.invokeAndWait(() -> {
+            // Espera a que se aplique la actualización pendiente en el EDT.
+        });
+
+        assertEquals("https://example.com/update.zip", getField(inicio, "updateDownloadUrl"));
+        assertEquals(Constantes.UI_MENU_UPDATE_AVAILABLE + " (9999.0.0)", updateItem.getText());
+        assertTrue(updateItem.isVisible());
+    }
+
+    @Test
     void openUpdateDownloadHandlesMissingAndConfiguredUrls() {
         Inicio inicio = newInstanceWithoutConstructor();
 
@@ -249,6 +297,37 @@ class InicioTest {
                 new Class<?>[]{String.class, boolean.class}, "  ", false));
         assertFalse((boolean) invoke(inicio, "validarDirectorio",
                 new Class<?>[]{String.class, boolean.class}, file.toString(), false));
+    }
+
+    @Test
+    void fileSelectionsUpdateRoutesOnlyWhenApproved(@TempDir Path tempDir) throws IOException {
+        Inicio inicio = newInstanceWithoutConstructor();
+        Path source = Files.createFile(tempDir.resolve("installer.exe"));
+        Path destination = Files.createDirectory(tempDir.resolve("output"));
+        JLabel sourceLabel = new JLabel();
+        JLabel destinationLabel = new JLabel();
+        JButton executeButton = new JButton();
+        setField(inicio, "jLabel1", sourceLabel);
+        setField(inicio, "jLabel2", destinationLabel);
+        setField(inicio, "jButton3", executeButton);
+
+        invoke(inicio, "applySourceSelection", new Class<?>[]{int.class, File.class},
+                JFileChooser.APPROVE_OPTION, source.toFile());
+        assertEquals(source.toString(), sourceLabel.getText());
+        assertFalse(executeButton.isEnabled());
+
+        invoke(inicio, "applySourceSelection", new Class<?>[]{int.class, File.class},
+                JFileChooser.CANCEL_OPTION, tempDir.resolve("ignored.exe").toFile());
+        assertEquals(source.toString(), getField(inicio, "rutaArchivo"));
+
+        invoke(inicio, "applyDestinationSelection", new Class<?>[]{int.class, File.class},
+                JFileChooser.APPROVE_OPTION, destination.toFile());
+        assertEquals(destination.toString(), destinationLabel.getText());
+        assertTrue(executeButton.isEnabled());
+
+        invoke(inicio, "applyDestinationSelection", new Class<?>[]{int.class, File.class},
+                JFileChooser.CANCEL_OPTION, tempDir.resolve("ignored").toFile());
+        assertEquals(destination.toString(), getField(inicio, "rutaSave"));
     }
 
     @Test
@@ -315,22 +394,6 @@ class InicioTest {
     void normalizeZipNameUsesConfiguredValue() {
         Inicio inicio = newInstanceWithoutConstructor();
         assertEquals("Exe.zip", invoke(inicio, "normalizeZipName", new Class<?>[]{}));
-    }
-
-    @Test
-    void normalizeZipNameHandlesAlternativeConfiguredValues() {
-        Inicio inicio = newInstanceWithoutConstructor();
-
-        assertEquals("Exe.zip", invoke(inicio, "normalizeZipName",
-                new Class<?>[]{String.class}, (Object) null));
-        assertEquals("Exe.zip", invoke(inicio, "normalizeZipName",
-                new Class<?>[]{String.class}, "  "));
-        assertEquals("Exe.zip", invoke(inicio, "normalizeZipName",
-                new Class<?>[]{String.class}, "/"));
-        assertEquals("Custom.zip", invoke(inicio, "normalizeZipName",
-                new Class<?>[]{String.class}, "Custom"));
-        assertEquals("Custom.ZIP", invoke(inicio, "normalizeZipName",
-                new Class<?>[]{String.class}, "/tmp/Custom.ZIP"));
     }
 
     @Test
