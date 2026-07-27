@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.4.3 - 2026-07-27
+
+- Changed: refactorizada la seleccion de archivos y directorios en `Inicio` para separar la aplicacion de la seleccion
+  del dialogo y facilitar su validacion unitaria, sin cambiar el comportamiento de la interfaz.
+- Changed: separada la gestion de respuestas del servicio de actualizaciones y el arranque de su tarea en segundo plano
+  para poder probar estados HTTP, versiones y assets de descarga de forma determinista.
+- Added: ampliada la cobertura unitaria de `Inicio` para selecciones aceptadas y canceladas, respuestas de actualizacion
+  descartadas y validas, arranque de la comprobacion e icono escalado.
+- Changed: reorganizado `ConstantesTest` por grupos funcionales para reducir el numero de aserciones por test indicado
+  por SonarQube.
+- Changed: `maven-jar-plugin` actualizado de `3.5.0` a `3.5.1`.
+
 ## 2.4.2 - 2026-07-23
 
 - Fixed: la fecha del archivo de log se calcula explicitamente en UTC para evitar resultados dependientes de la zona
