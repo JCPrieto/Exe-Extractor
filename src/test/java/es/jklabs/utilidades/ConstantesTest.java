@@ -26,6 +26,10 @@ class ConstantesTest {
         assertEquals("JCPrieto/Exe-Extractor", Constantes.GITHUB_REPO);
         assertEquals("ExeExtractor-{version}.zip", Constantes.GITHUB_ASSET_PATTERN);
         assertEquals("Exe.zip", Constantes.OUTPUT_ZIP_NAME);
+    }
+
+    @Test
+    void menuAndButtonConstantsAreLoadedFromConfiguration() {
         assertEquals("Ayuda", Constantes.UI_MENU_HELP);
         assertEquals("Acerca de", Constantes.UI_MENU_ABOUT);
         assertEquals("Nueva version disponible", Constantes.UI_MENU_UPDATE_AVAILABLE);
@@ -36,12 +40,21 @@ class ConstantesTest {
         assertEquals("Continuar", Constantes.UI_BUTTON_CONTINUE);
         assertEquals("Selecciona archivo", Constantes.UI_LABEL_SELECT_FILE);
         assertEquals("Selecciona directorio", Constantes.UI_LABEL_SELECT_DIRECTORY);
+        assertEquals("Aceptar", Constantes.UI_BUTTON_OK);
+    }
+
+    @Test
+    void dialogConstantsAreLoadedFromConfiguration() {
         assertEquals("-Selecciona el archivo de origen.\n\n-Selecciona la carpeta de destino.\n\n-Ejecutar y listo, ya tienes extraido tu instalador.exe\n\n",
                 Constantes.UI_TEXT_INSTRUCTIONS);
         assertEquals("Acerca de", Constantes.UI_DIALOG_INFO_TITLE);
         assertEquals("Si se han extraido los archivos pulse continuar, en caso contrario espere",
                 Constantes.UI_DIALOG_CONTINUE_MESSAGE);
         assertEquals("Error", Constantes.UI_DIALOG_ERROR_TITLE);
+    }
+
+    @Test
+    void applicationInfoConstantsAreLoadedFromConfiguration() {
         assertEquals("Creado por: <b>Juan Carlos Prieto Silos</b>", Constantes.UI_INFO_AUTHOR);
         assertEquals("Web Site: JCPrieto.es", Constantes.UI_INFO_WEBSITE);
         assertEquals("Creado por", Constantes.UI_INFO_CREATED_BY);
@@ -52,6 +65,5 @@ class ConstantesTest {
         assertEquals("Powered by", Constantes.UI_INFO_POWERED_BY);
         assertEquals("Licencia GPLv3", Constantes.UI_INFO_LICENSE);
         assertEquals("https://www.gnu.org/licenses/gpl-3.0.html", Constantes.UI_INFO_LICENSE_URL);
-        assertEquals("Aceptar", Constantes.UI_BUTTON_OK);
     }
 }
