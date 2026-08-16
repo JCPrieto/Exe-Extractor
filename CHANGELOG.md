@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Changed: la compilacion, los tests de CI y la generacion de artefactos de release pasan de Java 21 a Java 25 LTS.
+- Changed: los lanzadores habilitan los encabezados compactos de objetos de Java 25 para reducir la huella de memoria y
+  la presion del recolector de basura.
+
 ## 2.4.3 - 2026-07-27
 
 - Changed: refactorizada la seleccion de archivos y directorios en `Inicio` para separar la aplicacion de la seleccion

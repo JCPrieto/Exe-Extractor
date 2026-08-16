@@ -20,7 +20,7 @@
 
 ## Coding Style & Naming Conventions
 
-- Java 21 is required (see `pom.xml`); prefer standard Java conventions.
+- Java 25 is required (see `pom.xml`); prefer standard Java conventions.
 - Indentation is 4 spaces; keep line wrapping readable and consistent.
 - Packages are lowercase (`es.jklabs...`); classes use PascalCase; constants use `UPPER_SNAKE_CASE`.
 - No formatter or linter is configured; keep changes minimal and consistent with existing style.
@@ -52,4 +52,5 @@
 - Linux dock integration depends on `ExeExtractor.desktop`, `StartupWMClass=ExeExtractor`, the external `app-icon.png`,
   and the desktop identity properties configured by `es.jklabs.ExeExtractor` and the Unix launcher.
 - Output ZIP filename is configurable via `src/main/resources/app.properties` key `app.output.zip.name`.
-- Ensure the target runtime has a JRE/JDK 21; Java 8+ may work but is not guaranteed.
+- Ensure the target runtime has a HotSpot-based JRE/JDK 25 (for example, Eclipse Temurin), since the packaged launchers
+  enable compact object headers with a HotSpot option.
