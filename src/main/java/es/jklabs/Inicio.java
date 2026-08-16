@@ -19,6 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -32,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -81,9 +83,16 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private void jButton3ActionPerformed() {//GEN-FIRST:event_jButton3ActionPerformed
-        if (!validarRutas()) {
-            return;
+        runIfValid(validarRutas(), this::startExtraction);
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void runIfValid(boolean valid, Runnable action) {
+        if (valid) {
+            action.run();
         }
+    }
+
+    private void startExtraction() {
         jButton3.setEnabled(false);
         SwingWorker<Void, Integer> worker = new SwingWorker<>() {
             @Override
@@ -104,25 +113,13 @@ public class Inicio extends javax.swing.JFrame {
                     });
                     latch.await();
                     int exitCode = process.waitFor();
-                    if (exitCode != 0) {
-                        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-                        SwingUtilities.invokeLater(() -> showError("Error al extraer el archivo (codigo " + exitCode + ").\n" + output));
-                        return null;
-                    }
-                    File generatedFile = detectarArchivoGenerado(outputDir, filesBefore);
-                    if (generatedFile == null) {
-                        SwingUtilities.invokeLater(() -> showError("No se pudo detectar el archivo generado por el instalador."));
-                        return null;
-                    }
-                    File outputFile = resolveOutputFile(outputDir);
-                    boolean sameFile = generatedFile.getCanonicalFile().equals(outputFile.getCanonicalFile());
-                    if (!sameFile) {
-                        Files.move(generatedFile.toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    }
-                    String outputName = outputFile.getName();
-                    SwingUtilities.invokeLater(() -> jTextArea1.setText(jTextArea1.getText() + "-El archivo que contiene lo que usted desea se llama " +
-                            outputName + "\n"));
-                    publish(100);
+                    finishExtraction(exitCode, process.getInputStream(), outputDir, filesBefore,
+                            message -> SwingUtilities.invokeLater(() -> showError(message)),
+                            outputName -> {
+                                SwingUtilities.invokeLater(() -> jTextArea1.setText(jTextArea1.getText() +
+                                        "-El archivo que contiene lo que usted desea se llama " + outputName + "\n"));
+                                publish(100);
+                            });
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (IOException e) {
@@ -145,7 +142,24 @@ public class Inicio extends javax.swing.JFrame {
             }
         };
         worker.execute();
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }
+
+    private void finishExtraction(int exitCode, InputStream processOutput, File outputDir, File[] filesBefore,
+                                  Consumer<String> errorHandler, Consumer<String> successHandler) throws IOException {
+        if (exitCode != 0) {
+            String output = new String(processOutput.readAllBytes(), StandardCharsets.UTF_8);
+            errorHandler.accept("Error al extraer el archivo (codigo " + exitCode + ").\n" + output);
+            return;
+        }
+        File generatedFile = detectarArchivoGenerado(outputDir, filesBefore);
+        if (generatedFile == null) {
+            errorHandler.accept("No se pudo detectar el archivo generado por el instalador.");
+            return;
+        }
+        File outputFile = resolveOutputFile(outputDir);
+        Files.move(generatedFile.toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        successHandler.accept(outputFile.getName());
+    }
 
     private void jButton2ActionPerformed() {//GEN-FIRST:event_jButton2ActionPerformed
         SelectDir sd= new SelectDir();
@@ -413,9 +427,7 @@ public class Inicio extends javax.swing.JFrame {
         JDialog dialog = new JDialog(this, Constantes.UI_DIALOG_INFO_TITLE, true);
         ImageIcon appIcon = loadResourceIcon(APP_ICON_PATH);
         ImageIcon aboutIcon = loadScaledResourceIcon();
-        if (appIcon != null) {
-            dialog.setIconImage(appIcon.getImage());
-        }
+        applyIcon(appIcon, dialog::setIconImage);
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         GridBagConstraints constraints = new GridBagConstraints();
@@ -535,31 +547,87 @@ public class Inicio extends javax.swing.JFrame {
     }
 
     private void openUri(String uri) throws IOException {
-        if (!Desktop.isDesktopSupported()) {
+        openUri(uri, new SystemUriBrowser());
+    }
+
+    private void openUri(String uri, UriBrowser browser) throws IOException {
+        if (!browser.isDesktopSupported()) {
             showError("No se puede abrir el navegador automaticamente en este sistema.");
             return;
         }
-        Desktop desktop = Desktop.getDesktop();
-        if (!desktop.isSupported(Desktop.Action.BROWSE)) {
+        if (!browser.isBrowseSupported()) {
             showError("El sistema no soporta apertura de enlaces web.");
             return;
         }
-        desktop.browse(URI.create(uri));
+        browser.browse(URI.create(uri));
     }
 
     private void configureApplicationIcon() {
         ImageIcon appIcon = loadResourceIcon(APP_ICON_PATH);
-        if (appIcon == null) {
-            return;
+        applyIcon(appIcon, this::configureApplicationIcon);
+    }
+
+    private void applyIcon(ImageIcon icon, Consumer<Image> iconSetter) {
+        if (icon != null) {
+            iconSetter.accept(icon.getImage());
         }
-        Image image = appIcon.getImage();
+    }
+
+    private void configureApplicationIcon(Image image) {
         setIconImage(image);
         try {
-            if (Taskbar.isTaskbarSupported()) {
-                Taskbar.getTaskbar().setIconImage(image);
-            }
+            configureTaskbarIcon(image, new SystemApplicationTaskbar());
         } catch (UnsupportedOperationException | SecurityException e) {
             Logger.error("app.icon.taskbar", e);
+        }
+    }
+
+    private void configureTaskbarIcon(Image image, ApplicationTaskbar taskbar) {
+        if (taskbar.isSupported()) {
+            taskbar.setIconImage(image);
+        }
+    }
+
+    interface UriBrowser {
+        boolean isDesktopSupported();
+
+        boolean isBrowseSupported();
+
+        void browse(URI uri) throws IOException;
+    }
+
+    interface ApplicationTaskbar {
+        boolean isSupported();
+
+        void setIconImage(Image image);
+    }
+
+    private static class SystemUriBrowser implements UriBrowser {
+        @Override
+        public boolean isDesktopSupported() {
+            return Desktop.isDesktopSupported();
+        }
+
+        @Override
+        public boolean isBrowseSupported() {
+            return Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
+        }
+
+        @Override
+        public void browse(URI uri) throws IOException {
+            Desktop.getDesktop().browse(uri);
+        }
+    }
+
+    private static class SystemApplicationTaskbar implements ApplicationTaskbar {
+        @Override
+        public boolean isSupported() {
+            return Taskbar.isTaskbarSupported();
+        }
+
+        @Override
+        public void setIconImage(Image image) {
+            Taskbar.getTaskbar().setIconImage(image);
         }
     }
 
