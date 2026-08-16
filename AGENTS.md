@@ -33,6 +33,10 @@
 - Use `mvn test` for a quick validation and `mvn verify` when you also need the JaCoCo coverage artifacts.
 - `InicioTest` runs AWT in headless mode; validate Swing rendering and `Desktop`/`Taskbar` integration manually in a
   graphical environment when those areas change.
+- Keep operating-system integrations behind the existing `UriBrowser` and `ApplicationTaskbar` abstractions so their
+  supported and unsupported paths remain deterministic in headless tests.
+- Keep extraction result handling separate from the `SwingWorker`; test process errors, missing output and successful
+  moves through `finishExtraction` without creating Swing windows.
 
 ## Commit & Pull Request Guidelines
 
