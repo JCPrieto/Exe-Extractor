@@ -8,16 +8,22 @@ import org.junit.jupiter.api.io.TempDir;
 import sun.misc.Unsafe;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -216,6 +222,87 @@ class InicioTest {
                 new Class<?>[]{String.class}, "img/icons/app-icon.png"));
     }
 
+    private static Inicio.UriBrowser uriBrowser(boolean desktopSupported, boolean browseSupported,
+                                                AtomicReference<URI> openedUri) {
+        return new Inicio.UriBrowser() {
+            @Override
+            public boolean isDesktopSupported() {
+                return desktopSupported;
+            }
+
+            @Override
+            public boolean isBrowseSupported() {
+                return browseSupported;
+            }
+
+            @Override
+            public void browse(URI uri) {
+                if (openedUri != null) {
+                    openedUri.set(uri);
+                }
+            }
+        };
+    }
+
+    private static Inicio.ApplicationTaskbar taskbar(boolean supported, AtomicInteger applied) {
+        return new Inicio.ApplicationTaskbar() {
+            @Override
+            public boolean isSupported() {
+                return supported;
+            }
+
+            @Override
+            public void setIconImage(Image image) {
+                applied.incrementAndGet();
+            }
+        };
+    }
+
+    private static void invokeFinishExtraction(Inicio inicio, int exitCode, String processOutput, Path outputDir,
+                                               File[] filesBefore, AtomicReference<String> error,
+                                               AtomicReference<String> success) {
+        invoke(inicio, "finishExtraction",
+                new Class<?>[]{int.class, java.io.InputStream.class, File.class, File[].class,
+                        Consumer.class, Consumer.class},
+                exitCode, new ByteArrayInputStream(processOutput.getBytes()), outputDir.toFile(), filesBefore,
+                (Consumer<String>) error::set, (Consumer<String>) success::set);
+    }
+
+    @Test
+    void applyIconOnlyUsesAvailableIcons() {
+        Inicio inicio = newInstanceWithoutConstructor();
+        AtomicInteger applied = new AtomicInteger();
+        Consumer<Image> iconSetter = image -> applied.incrementAndGet();
+
+        invoke(inicio, "applyIcon", new Class<?>[]{ImageIcon.class, Consumer.class}, null, iconSetter);
+        assertEquals(0, applied.get());
+
+        ImageIcon icon = (ImageIcon) invoke(inicio, "loadResourceIcon",
+                new Class<?>[]{String.class}, "img/icons/app-icon.png");
+        invoke(inicio, "applyIcon", new Class<?>[]{ImageIcon.class, Consumer.class}, icon, iconSetter);
+        assertEquals(1, applied.get());
+    }
+
+    @Test
+    void openUriChecksDesktopCapabilitiesBeforeBrowsing() {
+        Inicio inicio = newInstanceWithoutConstructor();
+        Class<?>[] parameterTypes = {String.class, Inicio.UriBrowser.class};
+
+        Inicio.UriBrowser unavailableDesktop = uriBrowser(false, false, null);
+        assertThrows(RuntimeException.class, () -> invoke(inicio, "openUri", parameterTypes,
+                "https://example.com", unavailableDesktop));
+
+        Inicio.UriBrowser unavailableBrowse = uriBrowser(true, false, null);
+        assertThrows(RuntimeException.class, () -> invoke(inicio, "openUri", parameterTypes,
+                "https://example.com", unavailableBrowse));
+
+        AtomicReference<URI> openedUri = new AtomicReference<>();
+        Inicio.UriBrowser availableBrowser = uriBrowser(true, true, openedUri);
+        invoke(inicio, "openUri", parameterTypes, "https://example.com/download", availableBrowser);
+
+        assertEquals(URI.create("https://example.com/download"), openedUri.get());
+    }
+
     @Test
     void scaledResourceIconHelperLoadsConfiguredResource() {
         Inicio inicio = newInstanceWithoutConstructor();
@@ -275,6 +362,22 @@ class InicioTest {
     }
 
     @Test
+    void configureTaskbarIconOnlyUsesSupportedTaskbar() {
+        Inicio inicio = newInstanceWithoutConstructor();
+        Image image = new ImageIcon(new byte[0]).getImage();
+        AtomicInteger applied = new AtomicInteger();
+        Class<?>[] parameterTypes = {Image.class, Inicio.ApplicationTaskbar.class};
+
+        invoke(inicio, "configureTaskbarIcon", parameterTypes, image,
+                taskbar(false, applied));
+        assertEquals(0, applied.get());
+
+        invoke(inicio, "configureTaskbarIcon", parameterTypes, image,
+                taskbar(true, applied));
+        assertEquals(1, applied.get());
+    }
+
+    @Test
     void validatorsAcceptExistingPathsAndRejectMissingValues(@TempDir Path tempDir) throws IOException {
         Inicio inicio = newInstanceWithoutConstructor();
         Path file = Files.createFile(tempDir.resolve("installer.exe"));
@@ -297,6 +400,58 @@ class InicioTest {
                 new Class<?>[]{String.class, boolean.class}, "  ", false));
         assertFalse((boolean) invoke(inicio, "validarDirectorio",
                 new Class<?>[]{String.class, boolean.class}, file.toString(), false));
+    }
+
+    @Test
+    void runIfValidOnlyRunsActionForValidRoutes() {
+        Inicio inicio = newInstanceWithoutConstructor();
+        AtomicInteger executions = new AtomicInteger();
+        Class<?>[] parameterTypes = {boolean.class, Runnable.class};
+
+        invoke(inicio, "runIfValid", parameterTypes, false, (Runnable) executions::incrementAndGet);
+        assertEquals(0, executions.get());
+
+        invoke(inicio, "runIfValid", parameterTypes, true, (Runnable) executions::incrementAndGet);
+        assertEquals(1, executions.get());
+    }
+
+    @Test
+    void finishExtractionReportsProcessErrors(@TempDir Path tempDir) {
+        Inicio inicio = newInstanceWithoutConstructor();
+        AtomicReference<String> error = new AtomicReference<>();
+        AtomicReference<String> success = new AtomicReference<>();
+
+        invokeFinishExtraction(inicio, 7, "process failed", tempDir, new File[0], error, success);
+
+        assertEquals("Error al extraer el archivo (codigo 7).\nprocess failed", error.get());
+        assertNull(success.get());
+    }
+
+    @Test
+    void finishExtractionReportsMissingGeneratedFile(@TempDir Path tempDir) {
+        Inicio inicio = newInstanceWithoutConstructor();
+        AtomicReference<String> error = new AtomicReference<>();
+        AtomicReference<String> success = new AtomicReference<>();
+
+        invokeFinishExtraction(inicio, 0, "", tempDir, new File[0], error, success);
+
+        assertEquals("No se pudo detectar el archivo generado por el instalador.", error.get());
+        assertNull(success.get());
+    }
+
+    @Test
+    void finishExtractionMovesGeneratedFileAndReportsSuccess(@TempDir Path tempDir) throws IOException {
+        Inicio inicio = newInstanceWithoutConstructor();
+        Path generated = Files.createFile(tempDir.resolve("generated.dat"));
+        AtomicReference<String> error = new AtomicReference<>();
+        AtomicReference<String> success = new AtomicReference<>();
+
+        invokeFinishExtraction(inicio, 0, "", tempDir, new File[0], error, success);
+
+        assertNull(error.get());
+        assertEquals("Exe.zip", success.get());
+        assertFalse(Files.exists(generated));
+        assertTrue(Files.isRegularFile(tempDir.resolve("Exe.zip")));
     }
 
     @Test

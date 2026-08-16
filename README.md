@@ -10,16 +10,17 @@ convierte en un archivo .zip.
 La implementé hace tanto tiempo, que realmente no recuerdo la motivación que me llevó a hacerla.
 
 Le he hecho 4 retoques esteticos para que se parezca a otras aplicaciones que he implementado mas recientemente,
-refactorizado un poco el código, integrado con Maven y subido la versión de compilación a Java 21 ya que en su momento
+refactorizado un poco el código, integrado con Maven y subido la versión de compilación a Java 25 ya que en su momento
 la implementé en Java 5.
 
 ### Requisitos ###
 
-* Java 21
+* Java 25 con HotSpot (por ejemplo, Eclipse Temurin)
 
 ### Ejecución ###
 
 Después de generar el paquete con `mvn package`, el ZIP de `target/` incluye el jar, las dependencias y los lanzadores.
+Los lanzadores habilitan los encabezados compactos de objetos de Java 25 para reducir la huella de memoria de la JVM.
 En Linux se puede ejecutar desde la carpeta descomprimida con:
 
 ```shell

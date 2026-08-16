@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.0.0 - 2026-08-16
+
+- Breaking: Java 25 con HotSpot pasa a ser el entorno minimo requerido para compilar y ejecutar la aplicacion; los
+  binarios generados ya no son compatibles con Java 21.
+- Changed: los tests de CI, el analisis de SonarQube y la generacion de artefactos de release pasan a Eclipse Temurin
+  25.
+- Changed: los lanzadores habilitan los encabezados compactos de objetos de Java 25 para reducir la huella de memoria y
+  la presion del recolector de basura.
+- Changed: refactorizada la finalizacion de la extraccion y aisladas las integraciones con `Desktop`, `Taskbar` e iconos
+  para mantener las operaciones de Swing en el EDT y permitir pruebas deterministas en modo headless.
+- Added: ampliada la cobertura de `Inicio` para los resultados de la extraccion, la validacion previa, la apertura de
+  enlaces y la configuracion de iconos de ventana y barra de tareas.
+- Changed: `junit-jupiter` actualizado de `6.1.2` a `6.1.3`.
+
 ## 2.4.3 - 2026-07-27
 
 - Changed: refactorizada la seleccion de archivos y directorios en `Inicio` para separar la aplicacion de la seleccion
