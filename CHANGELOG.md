@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.1 - 2026-08-23
+
+- Changed: `jackson-databind` actualizado de `2.22.1` a `2.22.2`.
+- Changed: los puntos de entrada adoptan el metodo `main()` sin argumentos de Java 25 y los listeners Swing usan `_`
+  para los parametros no utilizados, sin cambiar el comportamiento de la aplicacion.
+- Changed: la resolucion de mensajes de error del logger pasa a ser diferida y solo se ejecuta cuando el nivel
+  `SEVERE` esta habilitado, manteniendo la excepcion original en el registro.
+- Added: test unitario de `Logger.error` para comprobar el nivel, el mensaje traducido y la excepcion registrada.
+
 ## 3.0.0 - 2026-08-16
 
 - Breaking: Java 25 con HotSpot pasa a ser el entorno minimo requerido para compilar y ejecutar la aplicacion; los

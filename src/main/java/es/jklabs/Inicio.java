@@ -64,10 +64,9 @@ public class Inicio extends javax.swing.JFrame {
     private javax.swing.JButton jButton3;
 
     /**
-     * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        ExeExtractor.main(args);
+    static void main() {
+        ExeExtractor.main();
     }
 
     static void launch() {
@@ -332,12 +331,12 @@ public class Inicio extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle(Constantes.NOMBRE_APP);
         configureApplicationIcon();
-        menuAcercaDe.addActionListener(evt -> showInfoDialog());
+        menuAcercaDe.addActionListener(_ -> showInfoDialog());
         menuAyuda.add(menuAcercaDe);
         menuBar.add(menuAyuda);
         menuBar.add(Box.createHorizontalGlue());
         menuUpdateItem.setVisible(false);
-        menuUpdateItem.addActionListener(evt -> openUpdateDownload());
+        menuUpdateItem.addActionListener(_ -> openUpdateDownload());
         menuUpdateItem.setIcon(loadUpdateIcon());
         menuUpdateItem.setToolTipText(Constantes.UI_MENU_UPDATE_TOOLTIP);
         menuUpdateItem.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
@@ -346,12 +345,12 @@ public class Inicio extends javax.swing.JFrame {
         setJMenuBar(menuBar);
 
         jButton1.setText(Constantes.UI_BUTTON_SOURCE);
-        jButton1.addActionListener(evt2 -> jButton1ActionPerformed());
+        jButton1.addActionListener(_ -> jButton1ActionPerformed());
 
         jLabel1.setText(Constantes.UI_LABEL_SELECT_FILE);
 
         jButton2.setText(Constantes.UI_BUTTON_DESTINATION);
-        jButton2.addActionListener(evt1 -> jButton2ActionPerformed());
+        jButton2.addActionListener(_ -> jButton2ActionPerformed());
 
         jLabel2.setText(Constantes.UI_LABEL_SELECT_DIRECTORY);
 
@@ -366,7 +365,7 @@ public class Inicio extends javax.swing.JFrame {
 
         jButton3.setText(Constantes.UI_BUTTON_EXECUTE);
         jButton3.setEnabled(false);
-        jButton3.addActionListener(evt -> jButton3ActionPerformed());
+        jButton3.addActionListener(_ -> jButton3ActionPerformed());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -511,7 +510,7 @@ public class Inicio extends javax.swing.JFrame {
 
     private void addAboutCloseButton(JDialog dialog, JPanel panel, GridBagConstraints constraints) {
         JButton button = new JButton(Constantes.UI_BUTTON_OK);
-        button.addActionListener(evt -> dialog.dispose());
+        button.addActionListener(_ -> dialog.dispose());
         constraints.gridy = 11;
         constraints.gridwidth = 3;
         panel.add(button, constraints);
@@ -959,7 +958,7 @@ public class Inicio extends javax.swing.JFrame {
         jLabel.setText(Constantes.UI_DIALOG_CONTINUE_MESSAGE);
 
         jButton1.setText(Constantes.UI_BUTTON_CONTINUE);
-        jButton1.addActionListener(evt -> jButton1ActionPerformed());
+        jButton1.addActionListener(_ -> jButton1ActionPerformed());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
