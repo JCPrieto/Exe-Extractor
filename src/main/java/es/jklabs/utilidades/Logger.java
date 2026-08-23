@@ -37,7 +37,7 @@ public class Logger {
     }
 
     public static void error(String mensaje, Exception e) {
-        LOG.log(Level.SEVERE, Mensajes.getError(mensaje), e);
+        LOG.log(Level.SEVERE, e, () -> Mensajes.getError(mensaje));
     }
 
     public static void eliminarLogsVacios() {
@@ -57,7 +57,7 @@ public class Logger {
                 Files.delete(file.toPath());
             }
         } catch (IOException e) {
-            LOG.log(Level.SEVERE, Mensajes.getError("logs.read"), e);
+            LOG.log(Level.SEVERE, e, () -> Mensajes.getError("logs.read"));
         }
     }
 

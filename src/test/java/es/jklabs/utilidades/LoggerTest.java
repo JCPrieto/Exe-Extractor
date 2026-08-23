@@ -4,11 +4,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -90,5 +94,36 @@ class LoggerTest {
 
         assertNotNull(firstLogger);
         assertSame(firstLogger, getLogger());
+    }
+
+    @Test
+    void errorLogsTranslatedMessageAndException() {
+        java.util.logging.Logger log = java.util.logging.Logger.getLogger(Logger.class.getName());
+        AtomicReference<LogRecord> publishedRecord = new AtomicReference<>();
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                publishedRecord.set(record);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        log.addHandler(handler);
+        log.setUseParentHandlers(false);
+        log.setLevel(Level.ALL);
+        Exception exception = new IOException("fallo de prueba");
+
+        Logger.error("logs.read", exception);
+
+        assertNotNull(publishedRecord.get());
+        assertEquals(Level.SEVERE, publishedRecord.get().getLevel());
+        assertEquals("Error al leer el archivo de log.", publishedRecord.get().getMessage());
+        assertSame(exception, publishedRecord.get().getThrown());
     }
 }
