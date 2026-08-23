@@ -23,6 +23,9 @@
 - Java 25 is required (see `pom.xml`); prefer standard Java conventions.
 - Indentation is 4 spaces; keep line wrapping readable and consistent.
 - Packages are lowercase (`es.jklabs...`); classes use PascalCase; constants use `UPPER_SNAKE_CASE`.
+- Use `_` for intentionally unused lambda parameters, as supported by Java 25.
+- Resolve localized or computed `java.util.logging` messages lazily with a `Supplier`; when logging an exception, use
+  the overload that accepts both the `Throwable` and the message supplier.
 - No formatter or linter is configured; keep changes minimal and consistent with existing style.
 
 ## Testing Guidelines
@@ -51,8 +54,9 @@
 ## Configuration & Runtime Notes
 
 - The app is a Swing GUI that extracts self-extracting installer packages (`.exe` and `.msi`) into `.zip` files.
-- The executable jar uses `es.jklabs.ExeExtractor` as its main class so Linux desktop identity is configured before
-  Swing initializes; `es.jklabs.Inicio` contains the main UI.
+- The executable jar uses the Java 25 no-argument `main()` method in `es.jklabs.ExeExtractor` so Linux desktop identity
+  is configured before Swing initializes; `es.jklabs.Inicio` contains the main UI and delegates its entry point to
+  `ExeExtractor`.
 - Linux dock integration depends on `ExeExtractor.desktop`, `StartupWMClass=ExeExtractor`, the external `app-icon.png`,
   and the desktop identity properties configured by `es.jklabs.ExeExtractor` and the Unix launcher.
 - Output ZIP filename is configurable via `src/main/resources/app.properties` key `app.output.zip.name`.
