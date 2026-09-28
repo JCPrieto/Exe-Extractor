@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.2 - 2026-09-28
+
+- Changed: `jackson-databind` actualizado de `2.22.2` a `2.22.3` (PR #33).
+- Changed: `maven-compiler-plugin` actualizado de `3.15.0` a `3.16.0` (PR #31).
+- Changed: `maven-surefire-plugin` actualizado de `3.5.6` a `3.6.0` (PR #32).
+
 ## 3.0.1 - 2026-08-23
 
 - Changed: `jackson-databind` actualizado de `2.22.1` a `2.22.2`.
