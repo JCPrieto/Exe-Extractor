@@ -24,8 +24,8 @@ jobs:
           java-version: "25"
           cache: maven
 
-      - name: Build and test
-        run: mvn -B test
+      - name: Build, test and package
+        run: mvn -B verify
 
   sonar:
     name: SonarQube analysis
