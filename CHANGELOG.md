@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.2 - 2026-09-28
+
+- Changed: `jackson-databind` actualizado de `2.22.2` a `2.22.3`.
+- Changed: `maven-compiler-plugin` actualizado de `3.15.0` a `3.16.0` y `maven-surefire-plugin` de `3.5.6` a `3.6.0`.
+- Changed: el CI de los pull requests ejecuta `mvn -B verify` para validar tambien el empaquetado y generar cobertura.
+- Java 25 con HotSpot sigue siendo el entorno requerido; no se modifica el comportamiento de la aplicacion.
+
 ## 3.0.1 - 2026-08-23
 
 - Changed: `jackson-databind` actualizado de `2.22.1` a `2.22.2`.
