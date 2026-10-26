@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.3 - 2026-10-26
+
+- Changed: `commons-lang3` actualizado de `3.20.0` a `3.21.0`.
+- Changed: `jackson-databind` actualizado de `2.22.3` a `2.22.4`, incluyendo correcciones de seguridad y estabilidad.
+- Java 25 con HotSpot sigue siendo el entorno requerido; no se modifica el comportamiento de la aplicacion.
+
 ## 3.0.2 - 2026-09-28
 
 - Changed: `jackson-databind` actualizado de `2.22.2` a `2.22.3`.
